@@ -1,3 +1,4 @@
+<h1>Chào mừng!</h1>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -73,7 +74,7 @@
             box-shadow: 0 0 5px rgba(0, 240, 255, 0.4);
         }
         #attendance-list {
-            max-height: 300px;
+            max-height: 520px; /* Đã tăng chiều cao để nhìn thấy 13 học sinh */
             overflow-y: auto;
             border: 1px dashed #334155;
             padding: 5px;
@@ -85,36 +86,74 @@
             border-collapse: collapse;
         }
         td {
-            padding: 8px 4px;
+            padding: 8px 6px;
             border-bottom: 1px solid #1e293b;
             font-size: 14px;
             color: #ffffff;
-            vertical-align: middle;
         }
-        td.name-col { text-align: left; word-break: break-word; width: 35%; }
-        td.select-col { width: 110px; text-align: right; }
-        td.note-col { padding-left: 6px; }
         
-        .status-dropdown {
-            width: 100%;
+        /* Đổi cấu trúc hiển thị thành dạng khối xếp chồng */
+        .student-row {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .student-name {
+            font-weight: 500;
+            word-break: break-word;
+        }
+        .student-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Bộ nút bấm nhỏ gọn */
+        .status-btn-group {
+            display: flex;
+            gap: 4px;
+            flex-shrink: 0;
+        }
+        .btn-status {
+            width: 24px;  
+            height: 22px; 
+            border: 1px solid #334155;
             background: #0d0e15;
-            color: #ffb700; /* Chữ vàng Gold */
-            border: 1px solid #ffb700;
-            padding: 6px 4px;
-            border-radius: 4px;
-            font-size: 13px;
+            color: #475569;
             font-weight: bold;
+            font-size: 12px; 
+            border-radius: 4px;
             cursor: pointer;
+            transition: all 0.15s ease;
+            padding: 0;
+            margin: 10px; /* Đã sửa margin lỗi để thẳng hàng với ô ghi chú */
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        .status-dropdown option {
-            background: #0d0e15;
+        
+        /* Nút Có phép (✓) - Tô màu nền VÀNG CAM đậm */
+        .btn-status.btn-check.active {
+            background: #ffb700;
+            color: #000000;
+            border-color: #ffb700;
+            box-shadow: 0 0 8px rgba(255, 183, 0, 0.4);
+        }
+        
+        /* Nút Không phép (X) - Tô màu nền ĐỎ HỒNG đậm */
+        .btn-status.btn-cross.active {
+            background: #ff0055;
             color: #ffffff;
+            border-color: #ff0055;
+            box-shadow: 0 0 8px rgba(255, 0, 85, 0.4);
         }
+
         .note-input {
-            padding: 6px 8px;
+            padding: 5px 8px;
             font-size: 13px;
             border: 1px solid #1e293b;
             color: #e2e8f0;
+            height: 26px;
         }
         .note-input:focus {
             border-color: #ff007f;
@@ -172,7 +211,7 @@
 
     <div class="form-group">
         <label>5. Danh sách học sinh vắng mặt:</label>
-        <textarea id="absentOutput" style="height: 150px; border-color: #ffb700; color: #ffb700;" readonly placeholder="Danh sách vắng mặt..."></textarea>
+        <textarea id="absentOutput" style="height: 240px; border-color: #ffb700; color: #ffb700;" readonly placeholder="Danh sách vắng mặt..."></textarea>
         <button class="btn-copy" type="button" id="copyBtn" onclick="copyToClipboard()">📋 Sao Chép Danh Sách</button>
     </div>
 </div>
@@ -183,7 +222,7 @@
             "Đỗ Bảo Linh",
             "Đào Đức Minh Khôi (Sữa)",
             "Trân Bảo Nam",
-            "|Trân Hồ Tuệ NhiNG",
+            "Trân Hồ Tuệ NhiNG",
             "Trân Minh Khoa",
             "Lê An Nhi (Ri)",
             "Phùng Thanh Thảo",
@@ -254,7 +293,6 @@
         totalOriginalCount = currentList.length;
         document.getElementById('totalCount').value = `Tổng số học sinh gốc: ${totalOriginalCount}`;
 
-        // Thêm trường note để quản lý chuỗi ghi chú nhập vào
         studentArray = currentList.map((name, index) => ({
             id: index + 1,
             name: name,
@@ -280,34 +318,59 @@
 
         studentArray.forEach((student, index) => {
             const tr = document.createElement('tr');
+            const td = document.createElement('td');
+            
+            const rowWrapper = document.createElement('div');
+            rowWrapper.className = 'student-row';
 
-            // Cột 1: STT và Tên
-            const tdName = document.createElement('td');
-            tdName.className = 'name-col';
-            tdName.innerText = `${student.id}. ${student.name}`;
+            const nameDiv = document.createElement('div');
+            nameDiv.className = 'student-name';
+            nameDiv.innerText = `${student.id}. ${student.name}`;
 
-            // Cột 2: Dropdown trạng thái vắng/đủ
-            const tdSelect = document.createElement('td');
-            tdSelect.className = 'select-col';
+            const controlsDiv = document.createElement('div');
+            controlsDiv.className = 'student-controls';
 
-            const select = document.createElement('select');
-            select.className = 'status-dropdown';
-            select.innerHTML = `
-                <option value="Đủ">Có mặt (Đủ)</option>
-                <option value="Có phép">Vắng có phép</option>
-                <option value="Không phép">Vắng k.phép</option>
-            `;
-            select.value = student.status;
+            const btnGroup = document.createElement('div');
+            btnGroup.className = 'status-btn-group';
 
-            select.addEventListener('change', function() {
-                studentArray[index].status = this.value;
+            const btnCheck = document.createElement('button');
+            btnCheck.type = 'button';
+            btnCheck.className = 'btn-status btn-check';
+            btnCheck.innerText = '✓';
+            if (student.status === "Có phép") btnCheck.classList.add('active');
+
+            const btnCross = document.createElement('button');
+            btnCross.type = 'button';
+            btnCross.className = 'btn-status btn-cross';
+            btnCross.innerText = 'X';
+            if (student.status === "Không phép") btnCross.classList.add('active');
+
+            btnCheck.addEventListener('click', function() {
+                if (studentArray[index].status === "Có phép") {
+                    studentArray[index].status = "Đủ";
+                    btnCheck.classList.remove('active');
+                } else {
+                    studentArray[index].status = "Có phép";
+                    btnCross.classList.remove('active');
+                    btnCheck.classList.add('active');
+                }
                 calculateAndOutput();
             });
-            tdSelect.appendChild(select);
 
-            // Cột 3: Ô nhập ghi chú
-            const tdNote = document.createElement('td');
-            tdNote.className = 'note-col';
+            btnCross.addEventListener('click', function() {
+                if (studentArray[index].status === "Không phép") {
+                    studentArray[index].status = "Đủ";
+                    btnCross.classList.remove('active');
+                } else {
+                    studentArray[index].status = "Không phép";
+                    btnCheck.classList.remove('active');
+                    btnCross.classList.add('active');
+                }
+                calculateAndOutput();
+            });
+
+            btnGroup.appendChild(btnCheck);
+            btnGroup.appendChild(btnCross);
 
             const inputNote = document.createElement('input');
             inputNote.type = 'text';
@@ -315,16 +378,19 @@
             inputNote.placeholder = 'Ghi chú...';
             inputNote.value = student.note;
 
-            // Lắng nghe sự kiện gõ chữ ở ô ghi chú để cập nhật tự động lên Ô số 5
             inputNote.addEventListener('input', function() {
                 studentArray[index].note = this.value.trim();
                 calculateAndOutput();
             });
-            tdNote.appendChild(inputNote);
 
-            tr.appendChild(tdName);
-            tr.appendChild(tdSelect);
-            tr.appendChild(tdNote);
+            controlsDiv.appendChild(btnGroup);
+            controlsDiv.appendChild(inputNote);
+
+            rowWrapper.appendChild(nameDiv);
+            rowWrapper.appendChild(controlsDiv);
+            
+            td.appendChild(rowWrapper);
+            tr.appendChild(td);
             tbody.appendChild(tr);
         });
 
@@ -339,21 +405,17 @@
         const classText = dropdown.value || "";
         const absentOutput = document.getElementById('absentOutput');
         
-        let absentCount = 1;
         let totalAbsent = 0;
         let textListAbsent = "";
 
         studentArray.forEach(student => {
-            // Định dạng chuỗi ghi chú kèm thêm nếu có nội dung viết vào ô note
             let noteStr = student.note ? ` - ${student.note}` : "";
 
             if (student.status === "Có phép") {
-                textListAbsent += `${absentCount}. ${student.name} (Có phép${noteStr})\n`;
-                absentCount++;
+                textListAbsent += `${student.id}. ${student.name} ( ...✓... ${noteStr})\n`;
                 totalAbsent++;
             } else if (student.status === "Không phép") {
-                textListAbsent += `${absentCount}. ${student.name} (KHÔNG phép${noteStr})\n`;
-                absentCount++;
+                textListAbsent += `${student.id}. ${student.name} ( ...X... ${noteStr})\n`;
                 totalAbsent++;
             }
         });
@@ -361,10 +423,11 @@
         const currentSiso = totalOriginalCount - totalAbsent;
         document.getElementById('inputSiso').value = currentSiso;
 
-        let outputText = `${classText}\nSĩ số: ${currentSiso}\n-----------------------\n Danh sách Vắng:\n`;
+        // Định dạng văn bản mới có dòng "Vắng: X" ngay dưới dòng Sĩ số
+        let outputText = `${classText}\nSĩ số: ${currentSiso}\nVắng: ${totalAbsent}\n-----------------------\n Danh sách Vắng:\n`;
 
         if (totalAbsent === 0) {
-            absentOutput.value = `Ca học: ${classText}\nSĩ số: ${currentSiso}\nLớp đi học đầy đủ 100%, không có bạn nào vắng.`;
+            absentOutput.value = `${classText}\nSĩ số: ${currentSiso}\nVắng: 0\nLớp đi học đầy đủ 100%, không có bạn nào vắng.`;
         } else {
             absentOutput.value = outputText + textListAbsent;
         }
