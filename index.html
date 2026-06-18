@@ -348,11 +348,11 @@
             let noteStr = student.note ? ` - ${student.note}` : "";
 
             if (student.status === "Có phép") {
-                textListAbsent += `${absentCount}. ${student.name} (Vắng có phép${noteStr})\n`;
+                textListAbsent += `${absentCount}. ${student.name} (Có phép${noteStr})\n`;
                 absentCount++;
                 totalAbsent++;
             } else if (student.status === "Không phép") {
-                textListAbsent += `${absentCount}. ${student.name} (Vắng KHÔNG phép${noteStr})\n`;
+                textListAbsent += `${absentCount}. ${student.name} (KHÔNG phép${noteStr})\n`;
                 absentCount++;
                 totalAbsent++;
             }
@@ -361,7 +361,7 @@
         const currentSiso = totalOriginalCount - totalAbsent;
         document.getElementById('inputSiso').value = currentSiso;
 
-        let outputText = `Ca học: ${classText}\nSĩ số: ${currentSiso}\n-----------------------\n`;
+        let outputText = `${classText}\nSĩ số: ${currentSiso}\n-----------------------\n Danh sách Vắng:`;
 
         if (totalAbsent === 0) {
             absentOutput.value = `Ca học: ${classText}\nSĩ số: ${currentSiso}\nLớp đi học đầy đủ 100%, không có bạn nào vắng.`;
