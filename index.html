@@ -1,1044 +1,135 @@
-
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cyber Attendance - Note Enhancement Mode</title>
+    <title>Danh Sách Điểm Danh Đầy Đủ</title>
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-            background-color: #050508; /* Giao diện tối Ultra Dark */
-            color: #00f0ff; /* Chữ màu xanh màu Neon Cyan */
-            margin: 0;
-            padding: 0 3px; /* Cách hai biên đúng 3px */
-            padding-top: 30px; /* Cách mép trên đúng 30px */
-            box-sizing: border-box;
-        }
-        .container {
-            background: #0d0e15;
-            border: 1px solid #ff007f; /* Viền màu hồng Neon Pink */
-            padding: 20px 12px;
-            border-radius: 8px;
-            box-shadow: 0 0 15px rgba(255, 0, 127, 0.25);
-            max-width: 500px;
-            margin: auto;
-        }
-        h2 {
-            color: #ff007f;
-            text-shadow: 0 0 8px rgba(255, 0, 127, 0.6);
-            text-align: center;
-            font-size: 16px;
-            margin-top: 0;
-            margin-bottom: 20px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        label {
-            display: block;
-            font-size: 13px;
-            font-weight: bold;
-            margin-bottom: 6px;
-            color: #ff007f;
-            text-transform: uppercase;
-        }
-        .row-flex {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-        .label-inline {
-            font-size: 15px;
-            font-weight: bold;
-            color: #00f0ff;
-            white-space: nowrap;
-        }
-        /* Style các ô nhập liệu và dropdown */
-        select, textarea, input {
-            width: 100%;
-            background-color: #090a0f;
-            border: 1px solid #334155;
-            border-radius: 6px;
-            color: #ffffff;
-            padding: 10px;
-            font-size: 15px;
-            box-sizing: border-box;
-            font-family: inherit;
-            outline: none;
-        }
-        select:focus, input:focus, textarea:focus {
-            border-color: #00f0ff;
-            box-shadow: 0 0 5px rgba(0, 240, 255, 0.4);
-        }
-        #attendance-list {
-            max-height: 520px; /* Đã tăng chiều cao để nhìn thấy 13 học sinh */
-            overflow-y: auto;
-            border: 1px dashed #334155;
-            padding: 5px;
-            border-radius: 6px;
-            background: #090a0f;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        td {
-            padding: 8px 6px;
-            border-bottom: 1px solid #1e293b;
-            font-size: 14px;
-            color: #ffffff;
-        }
+        body { font-family: Arial, sans-serif; background-color: #f4f4f9; padding: 10px; }
+        .o-a { border: 3px solid #3498db; padding: 10px; margin-bottom: 15px; border-radius: 8px; background-color: #fff; }
+        .ten-lop-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; padding: 10px; border-bottom: 2px solid #3498db; }
+        .ten-lop { font-size: 1.2em; font-weight: bold; color: #2c3e50; }
+        .si-so { font-size: 0.9em; color: #7f8c8d; }
+        .noi-dung-lop { display: none; margin-top: 10px; }
         
-        /* Đổi cấu trúc hiển thị thành dạng khối xếp chồng */
-        .student-row {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-        .student-name {
-            font-weight: 500;
-            word-break: break-word;
-        }
-        .student-controls {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        /* Bộ nút bấm nhỏ gọn */
-        .status-btn-group {
-            display: flex;
-            gap: 4px;
-            flex-shrink: 0;
-        }
-        .btn-status {
-            width: 24px;  
-            height: 22px; 
-            border: 1px solid #334155;
-            background: #0d0e15;
-            color: #475569;
-            font-weight: bold;
-            font-size: 12px; 
-            border-radius: 4px;
-            cursor: pointer;
-            transition: all 0.15s ease;
-            padding: 0;
-            margin: 10px; /* Đã sửa margin lỗi để thẳng hàng với ô ghi chú */
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+        .hoc-sinh-card { border: 1px solid #ddd; margin-bottom: 10px; padding: 10px; border-radius: 4px; background: #fafafa; transition: background 0.3s; }
+        .hoc-sinh-card.xin-nghi { background: #fffde7; border-color: #fbc02d; }
         
-        /* Nút Có phép (✓) - Tô màu nền VÀNG CAM đậm */
-        .btn-status.btn-check.active {
-            background: #ffb700;
-            color: #000000;
-            border-color: #ffb700;
-            box-shadow: 0 0 8px rgba(255, 183, 0, 0.4);
-        }
+        .line { font-size: 0.95em; margin: 4px 0; }
+        .ghi-chu-input { width: 100%; padding: 5px; box-sizing: border-box; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px; }
         
-        /* Nút Không phép (X) - Tô màu nền ĐỎ HỒNG đậm */
-        .btn-status.btn-cross.active {
-            background: #ff0055;
-            color: #ffffff;
-            border-color: #ff0055;
-            box-shadow: 0 0 8px rgba(255, 0, 85, 0.4);
-        }
-
-        .note-input {
-            padding: 5px 8px;
-            font-size: 13px;
-            border: 1px solid #1e293b;
-            color: #e2e8f0;
-            height: 26px;
-        }
-        .note-input:focus {
-            border-color: #ff007f;
-            box-shadow: 0 0 4px rgba(255, 0, 127, 0.4);
-        }
-        .btn-copy {
-            display: block;
-            width: 100%;
-            padding: 12px;
-            background: transparent;
-            color: #00f0ff;
-            border: 2px solid #00f0ff;
-            text-align: center;
-            border-radius: 6px;
-            font-weight: bold;
-            font-size: 14px;
-            cursor: pointer;
-            box-sizing: border-box;
-            text-shadow: 0 0 5px rgba(0, 240, 255, 0.5);
-            box-shadow: inset 0 0 8px rgba(0, 240, 255, 0.1);
-            text-transform: uppercase;
-            margin-top: 10px;
-        }
-        .btn-copy:active {
-            background: rgba(0, 240, 255, 0.2);
-        }
+        .btn-goi { background: #27ae60; color: white; padding: 2px 8px; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 0.8em; margin-left: 5px; display: inline-block; }
+        .btn-goi.disabled { background: #bdc3c7; pointer-events: none; opacity: 0.5; }
+        
+        .ds-buoi { display: flex; gap: 5px; margin-top: 10px; flex-wrap: wrap; }
+        .o-buoi { width: 30px; height: 30px; border: 2px solid #999; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 12px; font-weight: bold; border-radius: 4px; }
+        .o-buoi.active { background-color: #e74c3c; color: white; border-color: #e74c3c; }
+        
+        .btn-xin-nghi { padding: 5px 10px; cursor: pointer; border-radius: 4px; border: 1px solid #fbc02d; background: white; color: #fbc02d; font-weight: bold; margin-top: 10px; display: inline-block; }
+        .btn-xin-nghi.active { background: #fbc02d; color: white; }
+        
+        .ds-vang { margin-top: 10px; padding: 8px; background: #fff3f3; border-left: 4px solid #e74c3c; font-size: 0.9em; color: #c0392b; }
+        .vang-item { padding: 8px 0; border-bottom: 1px solid #fbdada; }
+        .vang-dong-2 { font-size: 0.85em; color: #d35400; font-weight: bold; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2>⚡ Điểm danh học sinh ⚡</h2>
-
-    <div class="form-group">
-        <label>1. Chọn thông tin ca học:</label>
-        <select id="classDropdown" onchange="loadClassData()"></select>
-    </div>
-
-    <div class="form-group">
-        <div class="row-flex">
-            <span class="label-inline">Sĩ số:</span>
-            <input type="text" id="inputSiso" style="color: #00ff66; font-weight: bold; border-color: #00ff66;" readonly value="0">
-        </div>
-    </div>
-
-    <div class="form-group">
-        <label>3. Trạng thái điểm danh học sinh:</label>
-        <div id="attendance-list"></div>
-    </div>
-
-    <div class="form-group">
-        <label>4. Số học sinh trong danh sách gốc:</label>
-        <input type="text" id="totalCount" readonly style="color: #00f0ff; font-weight: bold; border-color: #334155;" value="Tổng số học sinh gốc: 0">
-    </div>
-
-    <div class="form-group">
-        <label>5. Danh sách học sinh vắng mặt:</label>
-        <textarea id="absentOutput" style="height: 240px; border-color: #ffb700; color: #ffb700;" readonly placeholder="Danh sách vắng mặt..."></textarea>
-        <button class="btn-copy" type="button" id="copyBtn" onclick="copyToClipboard()">📋 Sao Chép Danh Sách</button>
-    </div>
-</div>
-
-<script>
-    const database = {
-        "Mickey L2+3/ Thị Phương Thứ 3 T2-158 18h00": [
-            "Đỗ Bảo Linh",
-            "Đào Đức Minh Khôi (Sữa)",
-            "Trần Bảo Nam",
-            "Trần Hồ Tuệ Nhi MIC",
-            "Trần Minh Khoa",
-            "Lê An Nhi (Ri)",
-            "Phùng Thanh Thảo",
-            "Đặng Ngọc Gia Khôi",
-            "Đặng Khải An",
-            "Đặng Đức Trung",
-            "Nguyễn Bảo Anh",
-            "Nguyễn Phương Uyên",
-            "Ngô Thị Ngọc Diệp",
-            "Nguyễn Bảo Hân",
-            "Nguyễn Minh Khôi",
-            "Phạm Quang Anh ID NQ",
-            "Nguyễn Minh Thảo"
-        ],
-
-        "Mickey L2+3/ Thị Phương  Thứ 3 T2-158 18h30": [
-            "Đỗ Bảo Linh",
-            "Đào Đức Minh Khôi (Sữa)",
-            "Trần Bảo Nam",
-            "Trần Hồ Tuệ Nhi MIC",
-            "Trần Minh Khoa",
-            "Lê An Nhi (Ri)",
-            "Phùng Thanh Thảo",
-            "Đặng Ngọc Gia Khôi",
-            "Đặng Khải An",
-            "Đặng Đức Trung",
-            "Nguyễn Bảo Anh",
-            "Nguyễn Phương Uyên",
-            "Ngô Thị Ngọc Diệp",
-            "Nguyễn Bảo Hân",
-            "Nguyễn Minh Khôi",
-            "Phạm Quang Anh ID NQ",
-            "Nguyễn Minh Thảo"
-        ],
-
-        "Mickey L2+3/ Thị Phương  Thứ 3 T2-158 18h45": [
-            "Đỗ Bảo Linh",
-            "Đào Đức Minh Khôi (Sữa)",
-            "Trần Bảo Nam",
-            "Trần Hồ Tuệ Nhi MIC",
-            "Trần Minh Khoa",
-            "Lê An Nhi (Ri)",
-            "Phùng Thanh Thảo",
-            "Đặng Ngọc Gia Khôi",
-            "Đặng Khải An",
-            "Đặng Đức Trung",
-            "Nguyễn Bảo Anh",
-            "Nguyễn Phương Uyên",
-            "Ngô Thị Ngọc Diệp",
-            "Nguyễn Bảo Hân",
-            "Nguyễn Minh Khôi",
-            "Phạm Quang Anh ID NQ",
-            "Nguyễn Minh Thảo"
-        ],
-
-        "Mickey L2+3/ Thị Phương  Thứ 5 T2-158 18h00": [
-            "Đỗ Bảo Linh",
-            "Đào Đức Minh Khôi (Sữa)",
-            "Trần Bảo Nam",
-            "Trần Hồ Tuệ Nhi MIC",
-            "Trần Minh Khoa",
-            "Lê An Nhi (Ri)",
-            "Phùng Thanh Thảo",
-            "Đặng Ngọc Gia Khôi",
-            "Đặng Khải An",
-            "Đặng Đức Trung",
-            "Nguyễn Bảo Anh",
-            "Nguyễn Phương Uyên",
-            "Ngô Thị Ngọc Diệp",
-            "Nguyễn Bảo Hân",
-            "Nguyễn Minh Khôi",
-            "Phạm Quang Anh ID NQ",
-            "Nguyễn Minh Thảo"
-        ],
-
-        "Mickey L2+3/ Thị Phương  Thứ 5 T2-158 18h30": [
-            "Đỗ Bảo Linh",
-            "Đào Đức Minh Khôi (Sữa)",
-            "Trần Bảo Nam",
-            "Trần Hồ Tuệ Nhi MIC",
-            "Trần Minh Khoa",
-            "Lê An Nhi (Ri)",
-            "Phùng Thanh Thảo",
-            "Đặng Ngọc Gia Khôi",
-            "Đặng Khải An",
-            "Đặng Đức Trung",
-            "Nguyễn Bảo Anh",
-            "Nguyễn Phương Uyên",
-            "Ngô Thị Ngọc Diệp",
-            "Nguyễn Bảo Hân",
-            "Nguyễn Minh Khôi",
-            "Phạm Quang Anh ID NQ",
-            "Nguyễn Minh Thảo"
-        ],
-
-        "Mickey L2+3/ Thị Phương  Thứ 5 T2-158 18h45": [
-            "Đỗ Bảo Linh",
-            "Đào Đức Minh Khôi (Sữa)",
-            "Trần Bảo Nam",
-            "Trần Hồ Tuệ Nhi MIC",
-            "Trần Minh Khoa",
-            "Lê An Nhi (Ri)",
-            "Phùng Thanh Thảo",
-            "Đặng Ngọc Gia Khôi",
-            "Đặng Khải An",
-            "Đặng Đức Trung",
-            "Nguyễn Bảo Anh",
-            "Nguyễn Phương Uyên",
-            "Ngô Thị Ngọc Diệp",
-            "Nguyễn Bảo Hân",
-            "Nguyễn Minh Khôi",
-            "Phạm Quang Anh ID NQ",
-            "Nguyễn Minh Thảo"
-        ],
-
-        "SMART-KID.  thứ 3 T2-58 18h00": [
-            "Nguyễn An Nhiên (Bơ)",
-            "Phạm Gia Huy",
-            "Nguyễn Mai Anh",
-            "Nguyễn Duy Minh Quang (Sóc)",
-            "Nguyễn Chiêu Quân (Zin)",
-            "Đỗ Thủy Tiên",
-            "Phạm Cát Tiên",
-            "Trinh Phúc An",
-            "Yên Lệ Nhật Minh (Mít)"
-        ],
-
-
-
-"SMART-KID.  thứ 3 T2-58 18h30": [
-            "Nguyễn An Nhiên (Bơ)",
-            "Phạm Gia Huy",
-            "Nguyễn Mai Anh",
-            "Nguyễn Duy Minh Quang (Sóc)",
-            "Nguyễn Chiêu Quân (Zin)",
-            "Đỗ Thủy Tiên",
-            "Phạm Cát Tiên",
-            "Trinh Phúc An",
-            "Yên Lệ Nhật Minh (Mít)"
-        ],
-
-
-
-"SMART-KID.  thứ 3 T2-58 18h45": [
-            "Nguyễn An Nhiên (Bơ)",
-            "Phạm Gia Huy",
-            "Nguyễn Mai Anh",
-            "Nguyễn Duy Minh Quang (Sóc)",
-            "Nguyễn Chiêu Quân (Zin)",
-            "Đỗ Thủy Tiên",
-            "Phạm Cát Tiên",
-            "Trinh Phúc An",
-            "Yên Lệ Nhật Minh (Mít)"
-        ],
-
-
-
-"SMART-KID.  thứ 5 T2-58 18h00": [
-            "Nguyễn An Nhiên (Bơ)",
-            "Phạm Gia Huy",
-            "Nguyễn Mai Anh",
-            "Nguyễn Duy Minh Quang (Sóc)",
-            "Nguyễn Chiêu Quân (Zin)",
-            "Đỗ Thủy Tiên",
-            "Phạm Cát Tiên",
-            "Trinh Phúc An",
-            "Yên Lệ Nhật Minh (Mít)"
-        ],
-
-
-
-"SMART-KID.  thứ 5 T2-58 18h30": [
-            "Nguyễn An Nhiên (Bơ)",
-            "Phạm Gia Huy",
-            "Nguyễn Mai Anh",
-            "Nguyễn Duy Minh Quang (Sóc)",
-            "Nguyễn Chiêu Quân (Zin)",
-            "Đỗ Thủy Tiên",
-            "Phạm Cát Tiên",
-            "Trinh Phúc An",
-            "Yên Lệ Nhật Minh (Mít)"
-        ],
-
-
-
-"SMART-KID.  thứ 5 T2-58 18h45": [
-            "Nguyễn An Nhiên (Bơ)",
-            "Phạm Gia Huy",
-            "Nguyễn Mai Anh",
-            "Nguyễn Duy Minh Quang (Sóc)",
-            "Nguyễn Chiêu Quân (Zin)",
-            "Đỗ Thủy Tiên",
-            "Phạm Cát Tiên",
-            "Trinh Phúc An",
-            "Yên Lệ Nhật Minh (Mít)"
-        ],
-
-        "LIKE - L5 / Thu Phương thứ 3 T3-30 18h00": [
-            "Hoàng Lê Minh Châu",
-            "Đỗ Quỳnh Chi",
-            "Nguyễn Tùng Lâm",
-            "Nguyễn Tuấn Khang",
-            "Dư Thanh Hương",
-            "Bùi Minh Hiếu",
-            "Lưu Thiên",
-            "Nhân",
-            "Nghiêm Vũ Trà My (Xinh cao)",
-            "Trần Hà Linh (Mun)",
-            "Nguyễn Xuân Bách",
-            "Vũ Ngọc Trúc Diễm"
-        ],
-
-        "LIKE - L5 / Thu Phương thứ 3 T3-30 18h30": [
-            "Hoàng Lê Minh Châu",
-            "Đỗ Quỳnh Chi",
-            "Nguyễn Tùng Lâm",
-            "Nguyễn Tuấn Khang",
-            "Dư Thanh Hương",
-            "Bùi Minh Hiếu",
-            "Lưu Thiên",
-            "Nhân",
-            "Nghiêm Vũ Trà My (Xinh cao)",
-            "Trần Hà Linh (Mun)",
-            "Nguyễn Xuân Bách",
-            "Vũ Ngọc Trúc Diễm"
-        ],
-
-        "LIKE - L5 / Thu Phương thứ 3 T3-30 18h45": [
-            "Hoàng Lê Minh Châu",
-            "Đỗ Quỳnh Chi",
-            "Nguyễn Tùng Lâm",
-            "Nguyễn Tuấn Khang",
-            "Dư Thanh Hương",
-            "Bùi Minh Hiếu",
-            "Lưu Thiên",
-            "Nhân",
-            "Nghiêm Vũ Trà My (Xinh cao)",
-            "Trần Hà Linh (Mun)",
-            "Nguyễn Xuân Bách",
-            "Vũ Ngọc Trúc Diễm"
-        ],
-
-        "LIKE - L5 / Thu Phương thứ 5 T3-30 18h00": [
-            "Hoàng Lê Minh Châu",
-            "Đỗ Quỳnh Chi",
-            "Nguyễn Tùng Lâm",
-            "Nguyễn Tuấn Khang",
-            "Dư Thanh Hương",
-            "Bùi Minh Hiếu",
-            "Lưu Thiên",
-            "Nhân",
-            "Nghiêm Vũ Trà My (Xinh cao)",
-            "Trần Hà Linh (Mun)",
-            "Nguyễn Xuân Bách",
-            "Vũ Ngọc Trúc Diễm"
-        ],
-
-        "LIKE - L5 / Thu Phương thứ 5 T3-30 18h30": [
-            "Hoàng Lê Minh Châu",
-            "Đỗ Quỳnh Chi",
-            "Nguyễn Tùng Lâm",
-            "Nguyễn Tuấn Khang",
-            "Dư Thanh Hương",
-            "Bùi Minh Hiếu",
-            "Lưu Thiên",
-            "Nhân",
-            "Nghiêm Vũ Trà My (Xinh cao)",
-            "Trần Hà Linh (Mun)",
-            "Nguyễn Xuân Bách",
-            "Vũ Ngọc Trúc Diễm"
-        ],
-
-        "LIKE - L5 / Thu Phương thứ 5 T3-30 18h45": [
-            "Hoàng Lê Minh Châu",
-            "Đỗ Quỳnh Chi",
-            "Nguyễn Tùng Lâm",
-            "Nguyễn Tuấn Khang",
-            "Dư Thanh Hương",
-            "Bùi Minh Hiếu",
-            "Lưu Thiên",
-            "Nhân",
-            "Nghiêm Vũ Trà My (Xinh cao)",
-            "Trần Hà Linh (Mun)",
-            "Nguyễn Xuân Bách",
-            "Vũ Ngọc Trúc Diễm"
-        ],
-
-        "SEA - L9 / Thu Hà.  thứ 3 T2-58 18h00": [
-            "Nguyễn Minh Đăng",
-            "Đặng Ngọc Ánh",
-            "Lâm Vân Trang",
-            "Lê Gia",
-            "Linh",
-            "Trần Vũ Hoài Anh",
-            "Nguyễn Hương Trang (Sóc)",
-            "Trần Ngọc Khánh Chi",
-            "Nguyễn Quang Huy",
-            "Đinh Đức Minh",
-            "Nguyễn Minh Lộc",
-            "Nguyễn Thị Minh Anh",
-            "Lê Duy Tùng"
-        ],
-
-        "SEA - L9 / Thu Hà.  thứ 3 T2-58 18h30": [
-            "Nguyễn Minh Đăng",
-            "Đặng Ngọc Ánh",
-            "Lâm Vân Trang",
-            "Lê Gia",
-            "Linh",
-            "Trần Vũ Hoài Anh",
-            "Nguyễn Hương Trang (Sóc)",
-            "Trần Ngọc Khánh Chi",
-            "Nguyễn Quang Huy",
-            "Đinh Đức Minh",
-            "Nguyễn Minh Lộc",
-            "Nguyễn Thị Minh Anh",
-            "Lê Duy Tùng"
-        ],
-
-        "SEA - L9 / Thu Hà.  thứ 3 T2-58 18h45": [
-            "Nguyễn Minh Đăng",
-            "Đặng Ngọc Ánh",
-            "Lâm Vân Trang",
-            "Lê Gia",
-            "Linh",
-            "Trần Vũ Hoài Anh",
-            "Nguyễn Hương Trang (Sóc)",
-            "Trần Ngọc Khánh Chi",
-            "Nguyễn Quang Huy",
-            "Đinh Đức Minh",
-            "Nguyễn Minh Lộc",
-            "Nguyễn Thị Minh Anh",
-            "Lê Duy Tùng"
-        ],
-
-        
-        "SEA - L9 / Thu Hà.  thứ 5 T2-58 18h00": [
-            "Nguyễn Minh Đăng",
-            "Đặng Ngọc Ánh",
-            "Lâm Vân Trang",
-            "Lê Gia",
-            "Linh",
-            "Trần Vũ Hoài Anh",
-            "Nguyễn Hương Trang (Sóc)",
-            "Trần Ngọc Khánh Chi",
-            "Nguyễn Quang Huy",
-            "Đinh Đức Minh",
-            "Nguyễn Minh Lộc",
-            "Nguyễn Thị Minh Anh",
-            "Lê Duy Tùng"
-        ],
-
-        "SEA - L9 / Thu Hà.  thứ 5 T2-58 18h30": [
-            "Nguyễn Minh Đăng",
-            "Đặng Ngọc Ánh",
-            "Lâm Vân Trang",
-            "Lê Gia",
-            "Linh",
-            "Trần Vũ Hoài Anh",
-            "Nguyễn Hương Trang (Sóc)",
-            "Trần Ngọc Khánh Chi",
-            "Nguyễn Quang Huy",
-            "Đinh Đức Minh",
-            "Nguyễn Minh Lộc",
-            "Nguyễn Thị Minh Anh",
-            "Lê Duy Tùng"
-        ],
-
-        "SEA - L9 / Thu Hà.  thứ 5 T2-58 18h45": [
-            "Nguyễn Minh Đăng",
-            "Đặng Ngọc Ánh",
-            "Lâm Vân Trang",
-            "Lê Gia",
-            "Linh",
-            "Trần Vũ Hoài Anh",
-            "Nguyễn Hương Trang (Sóc)",
-            "Trần Ngọc Khánh Chi",
-            "Nguyễn Quang Huy",
-            "Đinh Đức Minh",
-            "Nguyễn Minh Lộc",
-            "Nguyễn Thị Minh Anh",
-            "Lê Duy Tùng"
-        ],
-
-        "ILA-L7 - Thứ Hà thứ 4  18h00": [
-            "Quốc Bảo",
-            "Nguyễn Khôi Nguyên",
-            "Nguyễn Thanh Bình",
-            "Nguyễn Linh Ngân",
-            "Nguyễn Thị Thanh Thảo",
-            "Lâm Anh Thư",
-            "Đặng Hải Đăng",
-            "Nguyễn Minh Trang",
-            "Lê Minh Dũng",
-            "Trần Bảo",
-            "Long",
-            "Vũ Trọng Quang Huy",
-            "Nguyễn Tuấn Minh",
-            "Tổng Quang Anh",
-            "."
-        ],
-
-        "ILA-L7 - Thu Hà thứ 4  18h30": [
-            "Quốc Bảo",
-            "Nguyễn Khôi Nguyên",
-            "Nguyễn Thanh Bình",
-            "Nguyễn Linh Ngân",
-            "Nguyễn Thị Thanh Thảo",
-            "Lâm Anh Thư",
-            "Đặng Hải Đăng",
-            "Nguyễn Minh Trang",
-            "Lê Minh Dũng",
-            "Trần Bảo",
-            "Long",
-            "Vũ Trọng Quang Huy",
-            "Nguyễn Tuấn Minh",
-            "Tổng Quang Anh",
-            "."
-        ],
-
-        "ILA-L7 - Thu Hà thứ 4  18h45": [
-            "Quốc Bảo",
-            "Nguyễn Khôi Nguyên",
-            "Nguyễn Thanh Bình",
-            "Nguyễn Linh Ngân",
-            "Nguyễn Thị Thanh Thảo",
-            "Lâm Anh Thư",
-            "Đặng Hải Đăng",
-            "Nguyễn Minh Trang",
-            "Lê Minh Dũng",
-            "Trần Bảo",
-            "Long",
-            "Vũ Trọng Quang Huy",
-            "Nguyễn Tuấn Minh",
-            "Tổng Quang Anh",
-            "."
-        ],
-
-        "ILA-L7 - Thu Hà thứ 6  18h00": [
-            "Quốc Bảo",
-            "Nguyễn Khôi Nguyên",
-            "Nguyễn Thanh Bình",
-            "Nguyễn Linh Ngân",
-            "Nguyễn Thị Thanh Thảo",
-            "Lâm Anh Thư",
-            "Đặng Hải Đăng",
-            "Nguyễn Minh Trang",
-            "Lê Minh Dũng",
-            "Trần Bảo",
-            "Long",
-            "Vũ Trọng Quang Huy",
-            "Nguyễn Tuấn Minh",
-            "Tổng Quang Anh",
-            "."
-        ],
-
-        "ILA-L7 - Thu Hà thứ 6  18h30": [
-            "Quốc Bảo",
-            "Nguyễn Khôi Nguyên",
-            "Nguyễn Thanh Bình",
-            "Nguyễn Linh Ngân",
-            "Nguyễn Thị Thanh Thảo",
-            "Lâm Anh Thư",
-            "Đặng Hải Đăng",
-            "Nguyễn Minh Trang",
-            "Lê Minh Dũng",
-            "Trần Bảo",
-            "Long",
-            "Vũ Trọng Quang Huy",
-            "Nguyễn Tuấn Minh",
-            "Tổng Quang Anh",
-            "."
-        ],
-
-        "ILA-L7 - Thu Hà thứ 6  18h45": [
-            "Quốc Bảo",
-            "Nguyễn Khôi Nguyên",
-            "Nguyễn Thanh Bình",
-            "Nguyễn Linh Ngân",
-            "Nguyễn Thị Thanh Thảo",
-            "Lâm Anh Thư",
-            "Đặng Hải Đăng",
-            "Nguyễn Minh Trang",
-            "Lê Minh Dũng",
-            "Trần Bảo",
-            "Long",
-            "Vũ Trọng Quang Huy",
-            "Nguyễn Tuấn Minh",
-            "Tổng Quang Anh",
-            "."
-        ],
-
-        "CAMBRIDGE - L4/Nhung T3-158 18h00": [
-            "Trần Hà My (Su)",
-            "Nguyễn Kim Ngân",
-            "Nguyễn Tấn Nhật Anh",
-            "Nguyễn An Bảo Ngọc",
-            "Nguyễn Minh Đăng",
-            "Tạ Hồng Phúc Nguyên",
-            "Hoàng Trần Diên Phúc",
-            "Dương Trúc Lâm (Rubi)",
-            "Nguyễn Mỹ An",
-            "Lê Bảo An",
-            "Nguyễn Trúc Anh",
-            "Nguyễn Văn Phúc"
-        ],
-
-        "CAMBRIDGE - L4/Nhung T3-158 18h30": [
-            "Trần Hà My (Su)",
-            "Nguyễn Kim Ngân",
-            "Nguyễn Tấn Nhật Anh",
-            "Nguyễn An Bảo Ngọc",
-            "Nguyễn Minh Đăng",
-            "Tạ Hồng Phúc Nguyên",
-            "Hoàng Trần Diên Phúc",
-            "Dương Trúc Lâm (Rubi)",
-            "Nguyễn Mỹ An",
-            "Lê Bảo An",
-            "Nguyễn Trúc Anh",
-            "Nguyễn Văn Phúc"
-        ],
-        
-            
-        "CAMBRIDGE - L4/Nhung T3-158 18h45": [
-            "Trần Hà My (Su)",
-            "Nguyễn Kim Ngân",
-            "Nguyễn Tấn Nhật Anh",
-            "Nguyễn An Bảo Ngọc",
-            "Nguyễn Minh Đăng",
-            "Tạ Hồng Phúc Nguyên",
-            "Hoàng Trần Diên Phúc",
-            "Dương Trúc Lâm (Rubi)",
-            "Nguyễn Mỹ An",
-            "Lê Bảo An",
-            "Nguyễn Trúc Anh",
-            "Nguyễn Văn Phúc"
-        ],
-
-        "SUN LS/Mai Ly T3-58 18h00": [
-            "Nguyễn Phương Hà",
-            "Nguyễn Bảo Trâm",
-            "Vũ Hoài An",
-            "Nguyễn Hà Chi",
-            "Vũ Kim Anh",
-            "Nguyễn Nam Phong",
-            "Hoàng Trung Kiên",
-            "Trịnh Hoàng Long",
-            "Phạm Gia Hưng",
-            "Trần Ngọc Khánh Linh",
-            "Trần Đặng Quốc Bảo",
-            "Nguyễn Hà Anh",
-            "Nguyễn An Yên",
-            "Đỗ Quang Hải",
-            "Minh Quân",
-            "Minh Hiếu",
-            "Minh Nghĩa",
-            "Nguyễn Huyền Anh"
-        ],
-
-            "SUN LS/Mai Ly T3-58 18h30": [
-            "Nguyễn Phương Hà",
-            "Nguyễn Bảo Trâm",
-            "Vũ Hoài An",
-            "Nguyễn Hà Chi",
-            "Vũ Kim Anh",
-            "Nguyễn Nam Phong",
-            "Hoàng Trung Kiên",
-            "Trịnh Hoàng Long",
-            "Phạm Gia Hưng",
-            "Trần Ngọc Khánh Linh",
-            "Trần Đặng Quốc Bảo",
-            "Nguyễn Hà Anh",
-            "Nguyễn An Yên",
-            "Đỗ Quang Hải",
-            "Minh Quân",
-            "Minh Hiếu",
-            "Minh Nghĩa",
-            "Nguyễn Huyền Anh"
-        ],
-    
-        "SUN LS/Mai Ly T3-58 18h45": [
-            "Nguyễn Phương Hà",
-            "Nguyễn Bảo Trâm",
-            "Vũ Hoài An",
-            "Nguyễn Hà Chi",
-            "Vũ Kim Anh",
-            "Nguyễn Nam Phong",
-            "Hoàng Trung Kiên",
-            "Trịnh Hoàng Long",
-            "Phạm Gia Hưng",
-            "Trần Ngọc Khánh Linh",
-            "Trần Đặng Quốc Bảo",
-            "Nguyễn Hà Anh",
-            "Nguyễn An Yên",
-            "Đỗ Quang Hải",
-            "Minh Quân",
-            "Minh Hiếu",
-            "Minh Nghĩa",
-            "Nguyễn Huyền Anh"
-        ],
-        
-        "PARIS  -  L6/Minh Phương - VIP 10 -  thứ 3 T3-30 18h45": [
-            "Nguyễn Gia Hưng(tt)",
-            "Nguyễn Nhà Khánh",
-            "Nguyễn Chúc An",
-            "Nguyễn Khánh Nam",
-            "Nguyễn Nam Phong",
-            "Lê Bảo Nguyên"
-        ],
-
-        "PARIS  -  L6/Minh Phương - VIP 10 -  thứ 7 T3-30 18h00": [
-            "Nguyễn Gia Hưng(tt)",
-            "Nguyễn Nhà Khánh",
-            "Nguyễn Chúc An",
-            "Nguyễn Khánh Nam",
-            "Nguyễn Nam Phong",
-            "Lê Bảo Nguyên"
-        ],
-        
-        "PARIS  -  L6/Minh Phương  -  thứ 3 T3-30 18h30": [
-            "Nguyễn Gia Hưng(tt)",
-            "Nguyễn Nhà Khánh",
-            "Nguyễn Chúc An",
-            "Nguyễn Khánh Nam",
-            "Nguyễn Nam Phong",
-            "Lê Bảo Nguyên"
-        ],
-    };
-
-    let studentArray = [];
-    let totalOriginalCount = 0;
-
-    window.onload = function() {
-        initDropdown();
-        loadClassData();
-    };
-
-    function initDropdown() {
-        const dropdown = document.getElementById('classDropdown');
-        dropdown.innerHTML = "";
-
-        Object.keys(database).forEach(className => {
-            const option = document.createElement('option');
-            option.value = className;
-            option.innerText = className;
-            dropdown.appendChild(option);
-        });
-    }
-
-    function loadClassData() {
-        const selectClass = document.getElementById('classDropdown').value;
-        const currentList = database[selectClass] || [];
-        
-        totalOriginalCount = currentList.length;
-        document.getElementById('totalCount').value = `Tổng số học sinh gốc: ${totalOriginalCount}`;
-
-        studentArray = currentList.map((name, index) => ({
-            id: index + 1,
-            name: name,
-            status: "Đủ",
-            note: ""
-        }));
-
-        renderAttendanceTable();
-    }
-
-    function renderAttendanceTable() {
-        const container = document.getElementById('attendance-list');
-        container.innerHTML = "";
-
-        if (studentArray.length === 0) {
-            container.innerHTML = "<span style='color:#64748b; font-size:13px; display:block; text-align:center; padding:15px;'>Không có dữ liệu...</span>";
-            calculateAndOutput();
-            return;
-        }
-
-        const table = document.createElement('table');
-        const tbody = document.createElement('tbody');
-
-        studentArray.forEach((student, index) => {
-            const tr = document.createElement('tr');
-            const td = document.createElement('td');
-            
-            const rowWrapper = document.createElement('div');
-            rowWrapper.className = 'student-row';
-
-            const nameDiv = document.createElement('div');
-            nameDiv.className = 'student-name';
-            nameDiv.innerText = `${student.id}. ${student.name}`;
-
-            const controlsDiv = document.createElement('div');
-            controlsDiv.className = 'student-controls';
-
-            const btnGroup = document.createElement('div');
-            btnGroup.className = 'status-btn-group';
-
-            const btnCheck = document.createElement('button');
-            btnCheck.type = 'button';
-            btnCheck.className = 'btn-status btn-check';
-            btnCheck.innerText = '✓';
-            if (student.status === "Có phép") btnCheck.classList.add('active');
-
-            const btnCross = document.createElement('button');
-            btnCross.type = 'button';
-            btnCross.className = 'btn-status btn-cross';
-            btnCross.innerText = 'X';
-            if (student.status === "Không phép") btnCross.classList.add('active');
-
-            btnCheck.addEventListener('click', function() {
-                if (studentArray[index].status === "Có phép") {
-                    studentArray[index].status = "Đủ";
-                    btnCheck.classList.remove('active');
-                } else {
-                    studentArray[index].status = "Có phép";
-                    btnCross.classList.remove('active');
-                    btnCheck.classList.add('active');
-                }
-                calculateAndOutput();
-            });
-
-            btnCross.addEventListener('click', function() {
-                if (studentArray[index].status === "Không phép") {
-                    studentArray[index].status = "Đủ";
-                    btnCross.classList.remove('active');
-                } else {
-                    studentArray[index].status = "Không phép";
-                    btnCheck.classList.remove('active');
-                    btnCross.classList.add('active');
-                }
-                calculateAndOutput();
-            });
-
-            btnGroup.appendChild(btnCheck);
-            btnGroup.appendChild(btnCross);
-
-            const inputNote = document.createElement('input');
-            inputNote.type = 'text';
-            inputNote.className = 'note-input';
-            inputNote.placeholder = 'Ghi chú...';
-            inputNote.value = student.note;
-
-            inputNote.addEventListener('input', function() {
-                studentArray[index].note = this.value.trim();
-                calculateAndOutput();
-            });
-
-            controlsDiv.appendChild(btnGroup);
-            controlsDiv.appendChild(inputNote);
-
-            rowWrapper.appendChild(nameDiv);
-            rowWrapper.appendChild(controlsDiv);
-            
-            td.appendChild(rowWrapper);
-            tr.appendChild(td);
-            tbody.appendChild(tr);
-        });
-
-        table.appendChild(tbody);
-        container.appendChild(table);
-
-        calculateAndOutput();
-    }
-
-    function calculateAndOutput() {
-        const dropdown = document.getElementById('classDropdown');
-        const classText = dropdown.value || "";
-        const absentOutput = document.getElementById('absentOutput');
-        
-        let totalAbsent = 0;
-        let textListAbsent = "";
-
-        studentArray.forEach(student => {
-            let noteStr = student.note ? ` - ${student.note}` : "";
-
-            if (student.status === "Có phép") {
-                textListAbsent += `${student.id}. ${student.name} ( ...✓... ${noteStr})\n`;
-                totalAbsent++;
-            } else if (student.status === "Không phép") {
-                textListAbsent += `${student.id}. ${student.name} ( ...X... ${noteStr})\n`;
-                totalAbsent++;
+    <div id="container"></div>
+
+    <script>
+        const duLieuLop = [
+            {
+                tenLop: "Lớp 12A1",
+                siSo: 2,
+                hocSinh: [
+                    { ten: "Nguyễn Văn A", lop: "Sun", sdt: "0901234567", hocPhi: "500.000" },
+                    { ten: "Trần Thị B", lop: "Star", sdt: "0912345678", hocPhi: "500.000" }
+                ]
             }
+        ];
+
+        const container = document.getElementById('container');
+
+        duLieuLop.forEach(lop => {
+            let div = document.createElement('div');
+            div.className = 'o-a';
+            div.innerHTML = `
+                <div class="ten-lop-header" onclick="this.nextElementSibling.style.display=(this.nextElementSibling.style.display=='block'?'none':'block')">
+                    <div>
+                        <div class="ten-lop">${lop.tenLop}</div>
+                        <div class="si-so">Sĩ số: ${lop.siSo}</div>
+                    </div>
+                    <span>▼</span>
+                </div>
+                <div class="noi-dung-lop">
+                    <div class="ds-vang"><b>Danh sách vắng:</b><div class="danh-sach-ten-vang">Không có ai</div></div>
+                    ${lop.hocSinh.map((hs, index) => `
+                        <div class="hoc-sinh-card" data-stt="${index + 1}" data-ten="${hs.ten}" data-sdt="${hs.sdt}">
+                            <div class="line"><b>${index + 1}. Họ tên:</b> ${hs.ten}</div>
+                            <div class="line"><b>Lớp riêng:</b> ${hs.lop}</div>
+                            <div class="line">
+                                <b>SĐT:</b> ${hs.sdt} 
+                                <a href="tel:${hs.sdt}" class="btn-goi">📞 Gọi</a>
+                            </div>
+                            <div class="line"><b>Học phí:</b> ${hs.hocPhi} VNĐ</div>
+                            <div class="line"><b>Ghi chú:</b></div>
+                            <input type="text" class="ghi-chu-input" placeholder="Nhập ghi chú...">
+                            
+                            <div class="ds-buoi">
+                                ${Array(8).fill(0).map((_, i) => `<div class="o-buoi" onclick="toggleBuoi(this)">${i+1}</div>`).join('')}
+                            </div>
+                            <div class="btn-xin-nghi" onclick="toggleXinNghi(this)">Đã xin nghỉ</div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            container.appendChild(div);
         });
 
-        const currentSiso = totalOriginalCount - totalAbsent;
-        document.getElementById('inputSiso').value = currentSiso;
-
-        // Định dạng văn bản mới có dòng "Vắng: X" ngay dưới dòng Sĩ số
-        let outputText = `${classText}\nSĩ số: ${currentSiso}\nVắng: ${totalAbsent}\n-----------------------\n Danh sách Vắng:\n`;
-
-        if (totalAbsent === 0) {
-            absentOutput.value = `${classText}\nSĩ số: ${currentSiso}\nVắng: 0\nLớp đi học đầy đủ 100%, không có bạn nào vắng.`;
-        } else {
-            absentOutput.value = outputText + textListAbsent;
+        function toggleBuoi(el) {
+            if(el.closest('.hoc-sinh-card').classList.contains('xin-nghi')) return;
+            el.classList.toggle('active');
+            updateVang(el.closest('.o-a'));
         }
-    }
 
-    function copyToClipboard() {
-        const textToCopy = document.getElementById('absentOutput').value;
-        const btn = document.getElementById('copyBtn');
+        function toggleXinNghi(el) {
+            let card = el.closest('.hoc-sinh-card');
+            let btnGoi = card.querySelector('.btn-goi');
+            el.classList.toggle('active');
+            card.classList.toggle('xin-nghi');
+            
+            if(card.classList.contains('xin-nghi')) {
+                btnGoi.classList.add('disabled');
+                card.querySelectorAll('.o-buoi').forEach(o => o.classList.remove('active'));
+            } else {
+                btnGoi.classList.remove('disabled');
+            }
+            updateVang(el.closest('.o-a'));
+        }
 
-        navigator.clipboard.writeText(textToCopy).then(() => {
-            btn.innerText = "✓ ĐÃ SAO CHÉP THÀNH CÔNG!";
-            btn.style.color = "#00ff66";
-            btn.style.borderColor = "#00ff66";
-
-            setTimeout(() => {
-                btn.innerText = "📋 Sao Chép Danh Sách";
-                btn.style.color = "#00f0ff";
-                btn.style.borderColor = "#00f0ff";
-            }, 1500);
-        }).catch(err => {
-            console.error(err);
-            alert("Lỗi sao chép!");
-        });
-    }
-</script>
-
+        function updateVang(lopDiv) {
+            let vangContainer = lopDiv.querySelector('.danh-sach-ten-vang');
+            let html = "";
+            
+            lopDiv.querySelectorAll('.hoc-sinh-card').forEach(card => {
+                let stt = card.getAttribute('data-stt');
+                let ten = card.getAttribute('data-ten');
+                let sdt = card.getAttribute('data-sdt');
+                let isXinNghi = card.classList.contains('xin-nghi');
+                let buoiVang = [];
+                card.querySelectorAll('.o-buoi.active').forEach(o => buoiVang.push(o.innerText));
+                
+                if (isXinNghi || buoiVang.length > 0) {
+                    html += `
+                        <div class="vang-item">
+                            <div>${stt}. ${ten} <a href="tel:${sdt}" class="btn-goi ${isXinNghi ? 'disabled' : ''}">📞 Gọi</a></div>
+                            <div class="vang-dong-2">${isXinNghi ? "Đã xin nghỉ" : "Buổi: " + buoiVang.join(', ')}</div>
+                        </div>`;
+                }
+            });
+            vangContainer.innerHTML = html || "Không có ai";
+        }
+    </script>
 </body>
 </html>
