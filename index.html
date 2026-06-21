@@ -167,18 +167,27 @@ lichDay.forEach(item => {
                             <div class="ds-vang"><b>Danh sách vắng:</b><div class="danh-sach-ten-vang">Không có ai</div></div>
                             
                             ${lop.hocSinh.map((hs, index) => `
-                                <div class="hoc-sinh-card" data-stt="${index + 1}" data-ten="${hs.ten}" data-sdt="${hs.sdt}">
-                                    <!-- Phần nội dung học sinh giữ nguyên -->
-                                    <div class="line"><b>${index + 1}. Họ tên:</b> ${hs.ten}</div>
-                                    <div class="line"><b>SĐT:</b> ${hs.sdt} <a href="tel:${hs.sdt}" class="btn-goi">📞 Gọi</a></div>
-                                    <div class="line"><b>Vắng:</b> <span class="txt-vang">Không</span></div>
-                                    <input type="text" class="ghi-chu-input" placeholder="Nhập ghi chú..." oninput="luuDuLieu()">
-                                    <div class="ds-buoi">${Array(8).fill(0).map((_, i) => `<div class="o-buoi" onclick="toggleBuoi(this)" data-buoi="${i+1}"> ${i+1}</div>`).join('')}</div>
-                                    <div class="btn-xin-nghi" onclick="toggleXinNghi(this)">Đã xin nghỉ</div>
-                                    <div class="btn-di-hoc-tiep" onclick="diHocTiep(this)">Đi học tiếp</div>
-                                    <div class="btn-chuyen-lop" onclick="chuyenLop(this)">🔄 Chuyển lớp</div>
-                                </div>
-                            `).join('')}
+    <div class="hoc-sinh-card" data-stt="${index + 1}" data-ten="${hs.ten}" data-sdt="${hs.sdt}">
+        <div class="line"><b>${index + 1}. Họ tên:</b> ${hs.ten}</div>
+        <div class="line"><b>Lớp:</b> ${hs.lop}</div>
+        <div class="line">
+            <b>SĐT:</b> ${hs.sdt} 
+            <a href="tel:${hs.sdt}" class="btn-goi">📞 Gọi</a>
+        </div>
+        <div class="line"><b>Vắng:</b> <span class="txt-vang">Không</span></div>
+        <div class="line"><b>Học phí:</b> ${hs.hocPhi} VNĐ</div>
+        <div class="line"><b>Ghi chú:</b></div>
+        <input type="text" class="ghi-chu-input" placeholder="Nhập ghi chú..." oninput="luuDuLieu()">
+        
+        <div class="ds-buoi">
+            ${Array(8).fill(0).map((_, i) => `<div class="o-buoi" onclick="toggleBuoi(this)" data-buoi="${i+1}"> ${i+1}</div>`).join('')}
+        </div>
+        <div class="btn-xin-nghi" onclick="toggleXinNghi(this)">Đã xin nghỉ</div>
+        <div class="btn-di-hoc-tiep" onclick="diHocTiep(this)">Đi học tiếp</div>
+        <div class="btn-chuyen-lop" onclick="chuyenLop(this)">🔄 Chuyển lớp</div>
+    </div>
+`).join('')}
+
                         </div>
                     </div>
                 `;
