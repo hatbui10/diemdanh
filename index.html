@@ -1,4 +1,6 @@
-
+localStorage.clear();
+sessionStorage.clear();
+location.reload();
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -64,30 +66,56 @@
             { ten: "Cô Lan", sdt: "0983333333" }
         ];
 
+        // BẠN CÓ THỂ ĐỔI TÊN LỚP TẠI ĐÂY THOẢI MÁI THEO Ý MUỐN
         let duLieuLopGoc = [
             {
-                tenLop: "A1",
-                hocSinh: [
-                    { ten: "Nguyễn Văn A", lop: "12A1", sdt: "0901111111", hocPhi: "500.000", ghiChu: "", isXinNghi: false, isDiHocTiep: false, timeXinNghi: null, buoiVangData: [] },
-                    { ten: "Trần Thị B", lop: "12A1", sdt: "0902222222", hocPhi: "500.000", ghiChu: "", isXinNghi: false, isDiHocTiep: false, timeXinNghi: null, buoiVangData: [] }
-                ]
-            },
+    tenLop: "CAN",
+    hocSinh: [
+        { ten: "Nguyễn Khánh Linh (Chíp)", lop: "11", sdt: "093 450 3450", hocPhi: "0" },
+        { ten: "Yên Nhật Anh Thư", lop: "11", sdt: "094 472 4668", hocPhi: "0" },
+        { ten: "Nguyễn Cầm Giang", lop: "11", sdt: "094 444 8556", hocPhi: "0" },
+        { ten: "Tô Minh Ngọc", lop: "11", sdt: "091 214 5662", hocPhi: "0" },
+        { ten: "Nguyễn Linh Chi", lop: "11", sdt: "036 665 6979", hocPhi: "0" },
+        { ten: "Nguyễn Tuấn Anh (B)", lop: "11", sdt: "091 738 1828", hocPhi: "0" },
+        { ten: "Lê Ngân Giang", lop: "11", sdt: "098 207 8556", hocPhi: "0" },
+        { ten: "Đặng Khánh Hiền", lop: "11", sdt: "096 914 6280", hocPhi: "0" },
+        { ten: "Bùi Công Hoàng Nam", lop: "11", sdt: "098 833 8999", hocPhi: "0" },
+        { ten: "Nguyễn Minh Hải", lop: "11", sdt: "091 763 3148", hocPhi: "0" },
+        { ten: "Phạm Hồng Thắng", lop: "11", sdt: "090 425 1857", hocPhi: "0" },
+        { ten: "Nguyễn Thảo Trang", lop: "11", sdt: "093 626 8922", hocPhi: "0" },
+        { ten: "Nguyễn Trí Dũng", lop: "11", sdt: "096 891 2915", hocPhi: "0" },
+        { ten: "Bùi Phước An", lop: "11", sdt: "098 689 7989", hocPhi: "0" },
+        { ten: "Nguyễn Trần Thanh Hằng", lop: "11", sdt: "086 729 1368", hocPhi: "0" },
+        { ten: "Phạm Bảo Minh (Bột)", lop: "11", sdt: "098 210 1899", hocPhi: "0" },
+        { ten: "Lê Minh Hiếu", lop: "11", sdt: "090 348 4553", hocPhi: "0" },
+        { ten: "Nguyễn Tiến Anh", lop: "11", sdt: "076 861 3133", hocPhi: "0" },
+        { ten: "Bùi Gia Hiển", lop: "11", sdt: "090 413 1591", hocPhi: "0" },
+        { ten: "Nguyễn Thanh Lâm", lop: "11", sdt: "090 502 9888", hocPhi: "0" },
+        { ten: "Phạm Hoàng Lân", lop: "11", sdt: "094 482 7284", hocPhi: "0" },
+        { ten: "Lê Thành Công", lop: "11", sdt: "037 325 3378", hocPhi: "0" },
+        { ten: "Phạm Minh Quân", lop: "11", sdt: "097 846 3483", hocPhi: "0" },
+        { ten: "Đoàn Việt Anh", lop: "11", sdt: "098 883 8288", hocPhi: "0" },
+        { ten: "Mã Diệp Anh", lop: "11", sdt: "035 814 3884", hocPhi: "0" },
+        { ten: "Lý Thành Đức", lop: "11", sdt: "098 669 2113", hocPhi: "0" },
+        { ten: "Nguyễn Nghiêm Hoàng Hải", lop: "11", sdt: "091 693 1661", hocPhi: "0" }
+    ]
+},
             {
-                tenLop: "A2",
+                tenLop: "Lý 12A2",
                 hocSinh: [
                     { ten: "Lê Văn C", lop: "12A2", sdt: "0903333333", hocPhi: "600.000", ghiChu: "", isXinNghi: false, isDiHocTiep: false, timeXinNghi: null, buoiVangData: [] },
                     { ten: "Phạm Thị D", lop: "12A2", sdt: "0904444444", hocPhi: "600.000", ghiChu: "", isXinNghi: false, isDiHocTiep: false, timeXinNghi: null, buoiVangData: [] }
                 ]
             },
             {
-                tenLop: "A3",
+                tenLop: "Hóa 12A3",
                 hocSinh: [
                     { ten: "Hoàng Văn E", lop: "12A3", sdt: "0905555555", hocPhi: "550.000", ghiChu: "", isXinNghi: false, isDiHocTiep: false, timeXinNghi: null, buoiVangData: [] },
                     { ten: "Đặng Thị F", lop: "12A3", sdt: "0906666666", hocPhi: "550.000", ghiChu: "", isXinNghi: false, isDiHocTiep: false, timeXinNghi: null, buoiVangData: [] }
                 ]
             },
             {
-                tenLop: "A5",
+                tenLop: "Anh Văn A5",
                 hocSinh: [
                     { ten: "Bùi Văn G", lop: "12A5", sdt: "0907777777", hocPhi: "700.000", ghiChu: "", isXinNghi: false, isDiHocTiep: false, timeXinNghi: null, buoiVangData: [] },
                     { ten: "Vũ Thị H", lop: "12A5", sdt: "0908888888", hocPhi: "700.000", ghiChu: "", isXinNghi: false, isDiHocTiep: false, timeXinNghi: null, buoiVangData: [] }
@@ -97,15 +125,15 @@
 
         let duLieuLop = [];
 
+        // ĐỒNG BỘ TÊN LỚP Ở ĐÂY CHO KHỚP VỚI MẢNG TRÊN
         const lichDay = [
-            { thu: "Thứ 2", tenLop: ["A1", "A5"] },
-            { thu: "Thứ 3", tenLop: ["A2", "A3"] }
+            { thu: "Thứ 2", tenLop: ["CAN", "Anh Văn A5"] },
+            { thu: "Thứ 3", tenLop: ["Lý 12A2", "Hóa 12A3"] }
         ];
 
         const THOI_GIAN_KHOA = 2 * 60 * 60 * 1000; 
         const MAT_KHAU_ADMIN = "123456";
 
-        // Trạng thái đóng mở các Lớp để khi render lại không bị đóng menu tự động
         let trangThaiMoLop = {};
 
         function renderGiaoDien() {
@@ -117,7 +145,7 @@
             lichDay.forEach(item => {
                 let boxThu = document.createElement('details');
                 boxThu.className = 'o-a'; 
-                boxThu.open = true; // Luôn mở Thứ để dễ nhìn
+                boxThu.open = true; 
                 
                 boxThu.innerHTML = `
                     <summary style="padding:15px; cursor:pointer; font-weight:bold; background:#3498db; color:#fff; border-radius:8px; margin-bottom:10px;">
@@ -146,14 +174,14 @@
                                         <div class="class-meta">
                                             <div class="meta-row">
                                                 <b>Phòng:</b>
-                                                <select class="select-phong" data-lop="${tenLop}" onclick="this.dataset.oldValue=this.value" onchange="doiPhong(this)">
+                                                <select class="select-phong" data-lop="${tenLop}" onchange="doiPhong(this)">
                                                     <option value="">-- Chọn phòng --</option>
                                                     ${danhSachPhong.map(p => `<option value="${p}" ${meta.phong === p ? 'selected' : ''}>${p}</option>`).join('')}
                                                 </select>
                                             </div>
                                             <div class="meta-row">
                                                 <b>Giáo viên:</b>
-                                                <select class="select-gv" data-lop="${tenLop}" onclick="this.dataset.oldValue=this.value" onchange="updateGiaoVien(this)">
+                                                <select class="select-gv" data-lop="${tenLop}" onchange="updateGiaoVien(this)">
                                                     <option value="">-- Chọn GV --</option>
                                                     ${danhSachGiaoVien.map(gv => `<option value="${gv.sdt}" ${meta.gvSdt === gv.sdt ? 'selected' : ''}>${gv.ten}</option>`).join('')}
                                                 </select>
@@ -219,7 +247,6 @@
                 container.appendChild(boxThu);
             });
 
-            // Sau khi vẽ xong giao diện, cập nhật ngay sĩ số và danh sách vắng
             document.querySelectorAll('.lop-box').forEach(div => updateVang(div));
             initDragAndDrop(); 
         }
@@ -239,25 +266,14 @@
         }
 
         function updateGiaoVien(selectElem) {
-            let tenLop = selectElem.getAttribute('data-lop');
-            let sdt = selectElem.value;
-            let btnGoi = selectElem.nextElementSibling;
-            
             let mk = prompt("Nhập mật khẩu để thay đổi giáo viên:");
             if (mk !== MAT_KHAU_ADMIN) {
                 alert("Sai mật khẩu!");
-                taiDuLieu(); // Reset lại giao diện về đúng dữ liệu cũ
+                taiDuLieu();
                 return;
             }
-
-            if (sdt) {
-                btnGoi.href = `tel:${sdt}`;
-                btnGoi.classList.remove('disabled');
-            } else {
-                btnGoi.removeAttribute('href');
-                btnGoi.classList.add('disabled');
-            }
             luuCoDinhMeta();
+            renderGiaoDien();
         }
 
         function doiPhong(selectElem) {
@@ -268,19 +284,20 @@
                 return;
             }
             luuCoDinhMeta();
+            renderGiaoDien();
         }
 
         function luuGhiChu(tenLop, tenHS, value) {
             let lop = duLieuLop.find(l => l.tenLop === tenLop);
             if(lop) {
-                let hs = lop.hocSine.find(h => h.ten === tenHS) || lop.hocSinh.find(h => h.ten === tenHS);
+                let hs = lop.hocSinh.find(h => h.ten === tenHS);
                 if(hs) hs.ghiChu = value;
             }
             localStorage.setItem('duLieuLopDynamic', JSON.stringify(duLieuLop));
         }
 
         function luuCoDinhMeta() {
-            let dataLop = {};
+            let dataLop = JSON.parse(localStorage.getItem('classMetaData')) || {};
             document.querySelectorAll('.lop-box').forEach(lopDiv => {
                 let tenLop = lopDiv.getAttribute('data-lop');
                 let selectPhong = lopDiv.querySelector('.select-phong');
@@ -296,7 +313,13 @@
             let savedLop = localStorage.getItem('duLieuLopDynamic');
             if (savedLop) {
                 try {
-                    duLieuLop = JSON.parse(savedLop);
+                    let tamDuLieu = JSON.parse(savedLop);
+                    
+                    // Logic đồng bộ: Nếu bạn thay đổi tên lớp trong code gốc, hệ thống sẽ ánh xạ dữ liệu cũ sang tên mới
+                    duLieuLop = duLieuLopGoc.map(goc => {
+                        let trungData = tamDuLieu.find(t => t.tenLop === goc.tenLop);
+                        return trungData ? trungData : goc;
+                    });
                 } catch (e) {
                     duLieuLop = JSON.parse(JSON.stringify(duLieuLopGoc));
                 }
@@ -396,9 +419,7 @@
                 if(hs.buoiVangData) {
                     hs.buoiVangData.forEach(bData => {
                         tatCaBuoiVang.push(bData.buoi);
-                        if (bData.time && (NOW - parseInt(bData.time) > THOI_GIAN_KHOA)) {
-                            // khóa ô cũ
-                        } else {
+                        if (bData.time && (NOW - parseInt(bData.time) <= THOI_GIAN_KHOA)) {
                             buoiVangMoi.push(bData.buoi); 
                         }
                     });
@@ -409,7 +430,7 @@
                     if (!isActiveStudent) {
                         txtVang.innerHTML = "Đã xin nghỉ";
                     } else if (tatCaBuoiVang.length > 0) {
-                        txtVang.innerHTML = `Buổi ${tatCaBuoiVang.sort().join(', ')}`;
+                        txtVang.innerHTML = `Buổi ${tatCaBuoiVang.sort((a,b)=>a-b).join(', ')}`;
                     } else {
                         txtVang.innerHTML = "Không";
                     }
@@ -445,14 +466,19 @@
             }
 
             let dsLop = [];
-            let menu = "===== DANH SÁCH LỚP =====\n\n";
+            let menu = "===== DANH SÁCH LỚP HỢP LỆ =====\n\n";
 
-            duLieuLop.forEach((lop, index) => {
+            duLieuLop.forEach((lop) => {
                 if (lop.tenLop !== tenLopCu) {
                     dsLop.push(lop.tenLop);
                     menu += (dsLop.length) + ". Lớp " + lop.tenLop + "\n";
                 }
             });
+
+            if(dsLop.length === 0){
+                alert("Không có lớp khác để chuyển!");
+                return;
+            }
 
             let chon = prompt(menu);
             if (chon === null || chon === "") return;
@@ -464,6 +490,10 @@
             }
             
             let tenLopMoi = dsLop[IndexChon];
+            thựcThiChuyenLopDữLiệu(tenLopCu, tenLopMoi, tenHS);
+        }
+
+        function thựcThiChuyenLopDữLiệu(tenLopCu, tenLopMoi, tenHS) {
             let lopCuData = duLieuLop.find(l => l.tenLop === tenLopCu);
             let lopMoiData = duLieuLop.find(l => l.tenLop === tenLopMoi);
 
@@ -473,12 +503,11 @@
                     let hsData = lopCuData.hocSinh.splice(hsIndex, 1)[0];
                     lopMoiData.hocSinh.push(hsData);
                     
-                    // Tự động mở luôn menu của lớp mới để giáo viên nhìn thấy học sinh vừa chuyển vào
                     trangThaiMoLop[tenLopMoi] = true;
 
                     localStorage.setItem('duLieuLopDynamic', JSON.stringify(duLieuLop));
                     renderGiaoDien();
-                    alert(`Đã chuyển học sinh ${tenHS} sang lớp ${tenLopMoi} thành công!`);
+                    alert(`Đã di chuyển học sinh ${tenHS} sang lớp ${tenLopMoi}!`);
                 } else {
                     alert("Không tìm thấy dữ liệu học sinh!");
                 }
@@ -507,27 +536,12 @@
                     let tenLopCu = ev.dataTransfer.getData("text/lopcu");
                     
                     if (tenLopMoi && tenLopCu !== tenLopMoi) {
-                        let lopCuData = duLieuLop.find(l => l.tenLop === tenLopCu);
-                        let lopMoiData = duLieuLop.find(l => l.tenLop === tenLopMoi);
-                        
-                        if(lopCuData && lopMoiData) {
-                            let hsIndex = lopCuData.hocSinh.findIndex(hs => hs.ten === tenHS);
-                            if(hsIndex !== -1) {
-                                let hsData = lopCuData.hocSinh.splice(hsIndex, 1)[0];
-                                lopMoiData.hocSinh.push(hsData);
-                                
-                                trangThaiMoLop[tenLopMoi] = true;
-
-                                localStorage.setItem('duLieuLopDynamic', JSON.stringify(duLieuLop));
-                                renderGiaoDien();
-                            }
-                        }
+                        thựcThiChuyenLopDữLiệu(tenLopCu, tenLopMoi, tenHS);
                     }
                 };
             });
         }
 
-        // Tự động quét cập nhật sau mỗi 5 phút
         setInterval(() => {
             document.querySelectorAll('.lop-box').forEach(div => updateVang(div));
         }, 300000);
