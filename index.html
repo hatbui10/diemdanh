@@ -84,7 +84,7 @@ details[open] summary::after { content: "▲"; }
         ];
 
         // --- CẤU HÌNH DỮ LIỆU LỚP ---
-        const duLieuLop = [
+        let duLieuLop = [
     {
         tenLop: "Lớp 12A1",
         hocSinh: [
@@ -124,13 +124,14 @@ const lichDay = [
 
 
 
-        const container = document.getElementById('container');
+        
         const THOI_GIAN_KHOA = 2 * 60 * 60 * 1000; 
         const MAT_KHAU_ADMIN = "123456";
 
         // RENDER THEO THỨ
-
-// RENDER DỮ LIỆU THEO THỨ
+function renderGiaoDien() {
+    container.innerHTML = ""; // Xóa container cũ để vẽ mới
+   
 lichDay.forEach(item => {
     let boxThu = document.createElement('details');
     boxThu.className = 'o-a'; 
@@ -198,7 +199,7 @@ lichDay.forEach(item => {
         </div>
         <div class="btn-xin-nghi" onclick="toggleXinNghi(this)">Đã xin nghỉ</div>
         <div class="btn-di-hoc-tiep" onclick="diHocTiep(this)">Đi học tiếp</div>
-        <div class="btn-chuyen-lop" onclick="chuyenLop(this)">🔄 Chuyển lớp</div>
+        
     </div>
 `).join('')}
 
@@ -211,6 +212,10 @@ lichDay.forEach(item => {
     `;
     container.appendChild(boxThu);
 });
+
+// Gọi lại hàm kéo thả sau khi đã vẽ xong
+    initDragAndDrop(); 
+}
 
 
 
@@ -301,67 +306,72 @@ function doiPhong(selectElem) {
 
 
         function taiDuLieu() {
-            // 1. Tải thông tin Phòng và Giáo viên
-            let dataLop = JSON.parse(localStorage.getItem('classMetaData'));
-            if (dataLop) {
-                document.querySelectorAll('.o-a').forEach(lopDiv => {
-                    let tenLop = lopDiv.querySelector('.ten-lop').innerText;
-                    if (dataLop[tenLop]) {
-                        let selectPhong = lopDiv.querySelector('.select-phong');
-                        let selectGv = lopDiv.querySelector('.select-gv');
-                        
-                        if (selectPhong) selectPhong.value = dataLop[tenLop].phong;
-                        if (selectGv) {
-                            selectGv.value = dataLop[tenLop].gvSdt;
-                            updateGiaoVien(selectGv, true); // Gọi hàm cập nhật nút Gọi GV
-                        }
-                    }
-                });
-            }
+    console.log("Đang bắt đầu tải dữ liệu...");
 
-            // 2. Tải thông tin học sinh
-            let dataHs = JSON.parse(localStorage.getItem('diemDanhData'));
-            if (!dataHs) {
-                document.querySelectorAll('.o-a').forEach(div => updateVang(div));
-                return;
-            }
-
-            const NOW = Date.now();
-
-            dataHs.forEach(item => {
-                let card = document.querySelector(`.hoc-sinh-card[data-ten="${item.ten}"]`);
-                if (card) {
-                    card.querySelector('.ghi-chu-input').value = item.ghiChu;
-                    let btnXinNghi = card.querySelector('.btn-xin-nghi');
-                    
-                    if (item.isXinNghi) {
-                        card.classList.add('xin-nghi');
-                        btnXinNghi.classList.add('active');
-                        if (item.timeXinNghi) {
-                            btnXinNghi.setAttribute('data-time', item.timeXinNghi);
-                        }
-                        if (!item.isDiHocTiep) card.querySelector('.btn-goi').classList.add('disabled');
-                    }
-                    
-                    if (item.buoiVangData) {
-                        item.buoiVangData.forEach(bData => {
-                            let o = card.querySelector(`.o-buoi[data-buoi="${bData.buoi}"]`);
-                            if (o) {
-                                o.classList.add('active');
-                                if (bData.time) o.setAttribute('data-time', bData.time);
-                            }
-                        });
-                    }
-                    
-                    if (item.isDiHocTiep) {
-                        card.classList.add('di-hoc-tiep');
-                        card.querySelector('.btn-di-hoc-tiep').classList.add('active');
-                        card.querySelector('.btn-goi').classList.remove('disabled');
-                    }
-                }
-            });
-            document.querySelectorAll('.o-a').forEach(div => updateVang(div));
+    // 1. Tải cấu trúc lớp (duLieuLop) - PHẢI LÀM ĐẦU TIÊN
+    let savedLop = localStorage.getItem('duLieuLopDynamic');
+    if (savedLop) {
+        try {
+            duLieuLop = JSON.parse(savedLop);
+            console.log("Đã tải cấu trúc lớp từ LocalStorage");
+        } catch (e) {
+            console.error("Lỗi parse dữ liệu lớp, dùng dữ liệu gốc");
         }
+    }
+
+    // 2. Vẽ giao diện sau khi đã có dữ liệu lớp
+    renderGiaoDien(); 
+
+    // 3. Khôi phục dữ liệu điểm danh và cấu hình (Phòng/GV)
+    let dataLop = JSON.parse(localStorage.getItem('classMetaData'));
+    if (dataLop) {
+        document.querySelectorAll('.lop-box').forEach(lopDiv => {
+            let tenLop = lopDiv.querySelector('.ten-lop').innerText;
+            if (dataLop[tenLop]) {
+                let selectPhong = lopDiv.querySelector('.select-phong');
+                let selectGv = lopDiv.querySelector('.select-gv');
+                if (selectPhong) selectPhong.value = dataLop[tenLop].phong;
+                if (selectGv) {
+                    selectGv.value = dataLop[tenLop].gvSdt;
+                    updateGiaoVien(selectGv, true);
+                }
+            }
+        });
+    }
+
+    let dataHs = JSON.parse(localStorage.getItem('diemDanhData'));
+    if (dataHs) {
+        dataHs.forEach(item => {
+            let card = document.querySelector(`.hoc-sinh-card[data-ten="${item.ten}"]`);
+            if (card) {
+                card.querySelector('.ghi-chu-input').value = item.ghiChu || "";
+                if (item.isXinNghi) {
+                    card.classList.add('xin-nghi');
+                    let btn = card.querySelector('.btn-xin-nghi');
+                    btn.classList.add('active');
+                    if (item.timeXinNghi) btn.setAttribute('data-time', item.timeXinNghi);
+                }
+                if (item.buoiVangData) {
+                    item.buoiVangData.forEach(bData => {
+                        let o = card.querySelector(`.o-buoi[data-buoi="${bData.buoi}"]`);
+                        if (o) {
+                            o.classList.add('active');
+                            if (bData.time) o.setAttribute('data-time', bData.time);
+                        }
+                    });
+                }
+                if (item.isDiHocTiep) {
+                    card.classList.add('di-hoc-tiep');
+                    card.querySelector('.btn-di-hoc-tiep').classList.add('active');
+                }
+            }
+        });
+    }
+
+    // 4. Cập nhật trạng thái hiển thị vắng lần cuối
+    document.querySelectorAll('.lop-box').forEach(div => updateVang(div));
+    console.log("Tải dữ liệu hoàn tất!");
+}
 
         function toggleBuoi(el) {
             let card = el.closest('.hoc-sinh-card');
@@ -380,9 +390,8 @@ function doiPhong(selectElem) {
             updateVang(card.closest('.o-a'));
             luuDuLieu();
         }
-
-        function toggleXinNghi(el) {
-            if (el.classList.contains('locked')) return;
+function toggleXinNghi(el) {
+if (el.classList.contains('locked')) return;
 
             let card = el.closest('.hoc-sinh-card');
 
@@ -390,8 +399,7 @@ function doiPhong(selectElem) {
                 el.removeAttribute('data-time');
             } else {
                 el.setAttribute('data-time', Date.now());
-            }
-            let btnGoi = card.querySelector('.btn-goi');
+            }let btnGoi = card.querySelector('.btn-goi');
             let isDiHocTiep = card.classList.contains('di-hoc-tiep');
             
             el.classList.toggle('active');
@@ -406,6 +414,8 @@ function doiPhong(selectElem) {
             updateVang(card.closest('.o-a'));
             luuDuLieu();
         }
+
+
 function diHocTiep(el) {
             let card = el.closest('.hoc-sinh-card');
             let btnGoi = card.querySelector('.btn-goi');
