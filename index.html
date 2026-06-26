@@ -32,128 +32,97 @@
 </head>
 <body onload="loadData()">
 
-<div class="main-btn" onclick="toggle('thu-3')">► THỨ 3</div>
-<div id="thu-3" class="section">
-    <div class="time-btn" onclick="toggle('t1800_thu-3')">18:00 — PHIÊN HỌC</div>
-    <div id="t1800_thu-3" class="section">
+
+<div class="main-btn" onclick="toggle('thu-5')">► THỨ 5</div>
+<div id="thu-5" class="section">
+    <div class="time-btn" onclick="toggle('t1830_thu-5')">18:30 — PHIÊN HỌC</div>
+    <div id="t1830_thu-5" class="section">
         
-        <div class="class-btn" onclick="toggle('list-SVIP')">LỚP SVIP <span id="count-SVIP" style="color:#fbbf24;">(0/0)</span> ▼</div>
-        <div id="list-SVIP" class="section" data-id="SVIP">
+        <div class="class-btn" onclick="toggle('list-APOLLO_L5_YEN')">APOLLO L5 - Yến <span id="count-APOLLO_L5_YEN" style="color:#fbbf24;">(0/0)</span> ▼</div>
+        <div id="list-APOLLO_L5_YEN" class="section" data-id="APOLLO_L5_YEN">
             
-            <div class="student-card" id="st_SVIP_1">
-                <div>1. Nguyễn Minh Phúc</div>
+            <div class="student-card" id="st_APOLLO_L5_YEN_1">
+                <div>1. Trần Minh Châu	091 440 2665</div>
                 <div class="btn-group">
-                    <button class="btn-yes" onclick="setAttendance('st_SVIP_1', 'SVIP', true)">Có</button>
-                    <button class="btn-no" onclick="setAttendance('st_SVIP_1', 'SVIP', false)">Vắng</button>
-                    <a href="tel:0942916191" class="btn-call">📞 094 291 6191</a>
+                    <button class="btn-yes" onclick="setAttendance('st_APOLLO_L5_YEN_1', 'APOLLO_L5_YEN', true)">Có</button>
+                    <button class="btn-no" onclick="setAttendance('st_APOLLO_L5_YEN_1', 'APOLLO_L5_YEN', false)">Vắng</button>
+                    <a href="tel:0000000000" class="btn-call">📞 0000000000</a>
                 </div>
-                <select onchange="moveStudentDirect('st_SVIP_1', this.value)">
+                <select onchange="moveStudentDirect('st_APOLLO_L5_YEN_1', this.value)">
                     <option value="">➡️ Chuyển lớp...</option>
-                    <option value="SVIP">Giữ nguyên</option>
+                    <option value="APOLLO_L5_YEN">Giữ nguyên</option>
                 </select>
-                <select onchange="updateClassAbsentList('SVIP')">
+                <select onchange="updateClassAbsentList('APOLLO_L5_YEN')">
+                    <option value="">-- Ghi chú --</option>
+                    <option value="Nghỉ phép">Nghỉ phép</option>
+                    <option value="Đi muộn">Đi muộn</option>
+                </select>
+            </div>
+            <div class="student-card" id="st_APOLLO_L5_YEN_2">
+                <div>2. Nguyễn Trung Hiếu	033 339 9559</div>
+                <div class="btn-group">
+                    <button class="btn-yes" onclick="setAttendance('st_APOLLO_L5_YEN_2', 'APOLLO_L5_YEN', true)">Có</button>
+                    <button class="btn-no" onclick="setAttendance('st_APOLLO_L5_YEN_2', 'APOLLO_L5_YEN', false)">Vắng</button>
+                    <a href="tel:0000000000" class="btn-call">📞 0000000000</a>
+                </div>
+                <select onchange="moveStudentDirect('st_APOLLO_L5_YEN_2', this.value)">
+                    <option value="">➡️ Chuyển lớp...</option>
+                    <option value="APOLLO_L5_YEN">Giữ nguyên</option>
+                </select>
+                <select onchange="updateClassAbsentList('APOLLO_L5_YEN')">
+                    <option value="">-- Ghi chú --</option>
+                    <option value="Nghỉ phép">Nghỉ phép</option>
+                    <option value="Đi muộn">Đi muộn</option>
+                </select>
+            </div>
+            <div class="student-card" id="st_APOLLO_L5_YEN_3">
+                <div>3. Trần Phương Linh (Mít)	035 283 5535</div>
+                <div class="btn-group">
+                    <button class="btn-yes" onclick="setAttendance('st_APOLLO_L5_YEN_3', 'APOLLO_L5_YEN', true)">Có</button>
+                    <button class="btn-no" onclick="setAttendance('st_APOLLO_L5_YEN_3', 'APOLLO_L5_YEN', false)">Vắng</button>
+                    <a href="tel:0000000000" class="btn-call">📞 0000000000</a>
+                </div>
+                <select onchange="moveStudentDirect('st_APOLLO_L5_YEN_3', this.value)">
+                    <option value="">➡️ Chuyển lớp...</option>
+                    <option value="APOLLO_L5_YEN">Giữ nguyên</option>
+                </select>
+                <select onchange="updateClassAbsentList('APOLLO_L5_YEN')">
+                    <option value="">-- Ghi chú --</option>
+                    <option value="Nghỉ phép">Nghỉ phép</option>
+                    <option value="Đi muộn">Đi muộn</option>
+                </select>
+            </div>
+            <div class="student-card" id="st_APOLLO_L5_YEN_4">
+                <div>4. Phạm Công Danh	098 292 0983</div>
+                <div class="btn-group">
+                    <button class="btn-yes" onclick="setAttendance('st_APOLLO_L5_YEN_4', 'APOLLO_L5_YEN', true)">Có</button>
+                    <button class="btn-no" onclick="setAttendance('st_APOLLO_L5_YEN_4', 'APOLLO_L5_YEN', false)">Vắng</button>
+                    <a href="tel:0000000000" class="btn-call">📞 0000000000</a>
+                </div>
+                <select onchange="moveStudentDirect('st_APOLLO_L5_YEN_4', this.value)">
+                    <option value="">➡️ Chuyển lớp...</option>
+                    <option value="APOLLO_L5_YEN">Giữ nguyên</option>
+                </select>
+                <select onchange="updateClassAbsentList('APOLLO_L5_YEN')">
                     <option value="">-- Ghi chú --</option>
                     <option value="Nghỉ phép">Nghỉ phép</option>
                     <option value="Đi muộn">Đi muộn</option>
                 </select>
             </div>
 
-            <div class="student-card" id="st_SVIP_2">
-                <div>2. Trần Nguyễn Gia Hân (kẹo)</div>
-                <div class="btn-group">
-                    <button class="btn-yes" onclick="setAttendance('st_SVIP_2', 'SVIP', true)">Có</button>
-                    <button class="btn-no" onclick="setAttendance('st_SVIP_2', 'SVIP', false)">Vắng</button>
-                    <a href="tel:0911536555" class="btn-call">📞 091 153 6555</a>
-                </div>
-                <select onchange="moveStudentDirect('st_SVIP_2', this.value)">
-                    <option value="">➡️ Chuyển lớp...</option>
-                    <option value="SVIP">Giữ nguyên</option>
-                </select>
-                <select onchange="updateClassAbsentList('SVIP')">
-                    <option value="">-- Ghi chú --</option>
-                    <option value="Nghỉ phép">Nghỉ phép</option>
-                    <option value="Đi muộn">Đi muộn</option>
-                </select>
-            </div>
-
-            <div class="student-card" id="st_SVIP_3">
-                <div>3. Trần Gia An</div>
-                <div class="btn-group">
-                    <button class="btn-yes" onclick="setAttendance('st_SVIP_3', 'SVIP', true)">Có</button>
-                    <button class="btn-no" onclick="setAttendance('st_SVIP_3', 'SVIP', false)">Vắng</button>
-                    <a href="tel:0385285928" class="btn-call">📞 038 528 5928</a>
-                </div>
-                <select onchange="moveStudentDirect('st_SVIP_3', this.value)">
-                    <option value="">➡️ Chuyển lớp...</option>
-                    <option value="SVIP">Giữ nguyên</option>
-                </select>
-                <select onchange="updateClassAbsentList('SVIP')">
-                    <option value="">-- Ghi chú --</option>
-                    <option value="Nghỉ phép">Nghỉ phép</option>
-                    <option value="Đi muộn">Đi muộn</option>
-                </select>
-            </div>
-
-            <div class="student-card" id="st_SVIP_4">
-                <div>4. Nguyễn Diệu Vy (susu)</div>
-                <div class="btn-group">
-                    <button class="btn-yes" onclick="setAttendance('st_SVIP_4', 'SVIP', true)">Có</button>
-                    <button class="btn-no" onclick="setAttendance('st_SVIP_4', 'SVIP', false)">Vắng</button>
-                    <a href="tel:0386865566" class="btn-call">📞 038 686 5566</a>
-                </div>
-                <select onchange="moveStudentDirect('st_SVIP_4', this.value)">
-                    <option value="">➡️ Chuyển lớp...</option>
-                    <option value="SVIP">Giữ nguyên</option>
-                </select>
-                <select onchange="updateClassAbsentList('SVIP')">
-                    <option value="">-- Ghi chú --</option>
-                    <option value="Nghỉ phép">Nghỉ phép</option>
-                    <option value="Đi muộn">Đi muộn</option>
-                </select>
-            </div>
-
-            <div class="student-card" id="st_SVIP_5">
-                <div>5. Đỗ Hoài Dương</div>
-                <div class="btn-group">
-                    <button class="btn-yes" onclick="setAttendance('st_SVIP_5', 'SVIP', true)">Có</button>
-                    <button class="btn-no" onclick="setAttendance('st_SVIP_5', 'SVIP', false)">Vắng</button>
-                    <a href="tel:0329325053" class="btn-call">📞 032 932 5053</a>
-                </div>
-                <select onchange="moveStudentDirect('st_SVIP_5', this.value)">
-                    <option value="">➡️ Chuyển lớp...</option>
-                    <option value="SVIP">Giữ nguyên</option>
-                </select>
-                <select onchange="updateClassAbsentList('SVIP')">
-                    <option value="">-- Ghi chú --</option>
-                    <option value="Nghỉ phép">Nghỉ phép</option>
-                    <option value="Đi muộn">Đi muộn</option>
-                </select>
-            </div>
-
-            <div class="student-card" id="st_SVIP_6">
-                <div>6. Phạm Tú Uyên</div>
-                <div class="btn-group">
-                    <button class="btn-yes" onclick="setAttendance('st_SVIP_6', 'SVIP', true)">Có</button>
-                    <button class="btn-no" onclick="setAttendance('st_SVIP_6', 'SVIP', false)">Vắng</button>
-                    <a href="tel:0906436736" class="btn-call">📞 090 643 6736</a>
-                </div>
-                <select onchange="moveStudentDirect('st_SVIP_6', this.value)">
-                    <option value="">➡️ Chuyển lớp...</option>
-                    <option value="SVIP">Giữ nguyên</option>
-                </select>
-                <select onchange="updateClassAbsentList('SVIP')">
-                    <option value="">-- Ghi chú --</option>
-                    <option value="Nghỉ phép">Nghỉ phép</option>
-                    <option value="Đi muộn">Đi muộn</option>
-                </select>
-            </div>
-
-            <div class="class-absent-list" id="absent-SVIP">Danh sách vắng:<br>Không có</div>
-            <button class="btn-copy" onclick="copyAbsentList('SVIP')">📋 Copy DS Vắng</button>
+            <div class="class-absent-list" id="absent-APOLLO_L5_YEN">Danh sách vắng:<br>Không có</div>
+            <button class="btn-copy" onclick="copyAbsentList('APOLLO_L5_YEN')">📋 Copy DS Vắng</button>
         </div>
 
     </div>
 </div>
+
+
+
+
+
+
+
 
     <script>
         function toggle(id) { 
