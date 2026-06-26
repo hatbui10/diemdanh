@@ -3,58 +3,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Premium Class Manager</title>
+    <title>Premium Class Manager Pro</title>
     <style>
         body { background: #0c0d0f; color: #d1d5db; font-family: 'Segoe UI', sans-serif; margin: 30px 3px 0 3px; }
         .main-btn { background: rgba(255, 255, 255, 0.05); border: 1px solid #fbbf24; color: #fbbf24; padding: 20px; text-align: center; border-radius: 12px; cursor: pointer; font-weight: bold; }
-        
         .section { display: none; margin-left: 15px; border-left: 1px solid #334155; padding-left: 15px; }
         .active { display: block; }
-        
         .time-btn { background: #1e293b; color: #fff; padding: 15px; margin: 10px 0; border-radius: 8px; cursor: pointer; border: 1px solid #475569; }
         .class-btn { background: #0f172a; border: 1px solid #334155; color: #94a3b8; padding: 12px; margin: 5px 0; border-radius: 6px; cursor: pointer; }
-        
         .student-card { background: rgba(255,255,255,0.03); border: 1px solid #334155; padding: 10px; margin: 8px 0; border-radius: 8px; transition: 0.3s; }
         .is-absent { border: 1px solid #dc2626; background: rgba(220, 38, 38, 0.1); }
-        
-        .btn-group { display: flex; gap: 5px; margin-top: 8px; }
-        button { border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 11px; }
+        .btn-group { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
+        button { border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 11px; }
         .btn-yes { background: #059669; color: white; }
         .btn-no { background: #dc2626; color: white; }
-        .btn-call { background: #2563eb; color: white; text-decoration: none; display: inline-block; padding: 6px 12px; }
-        
+        .btn-move { background: #8b5cf6; color: white; }
+        .btn-call { background: #2563eb; color: white; text-decoration: none; display: inline-block; padding: 6px 10px; }
         select { width: 100%; margin-top: 8px; padding: 5px; background: #000; color: #fbbf24; border: 1px solid #475569; border-radius: 4px; cursor: pointer; }
         .class-absent-list { margin-top: 10px; padding: 10px; border: 1px dashed #dc2626; color: #f87171; border-radius: 5px; font-size: 0.85em; font-weight: bold; }
-        .btn-copy { background: #6366f1; color: white; margin-top: 8px; width: 100%; padding: 10px; font-size: 13px; }
+        .btn-copy { background: #6366f1; color: white; margin-top: 8px; width: 100%; padding: 10px; }
     </style>
 </head>
 <body>
 
     <div class="main-btn" onclick="toggle('day2')">► THỨ 2</div>
-    
     <div id="day2" class="section">
         <div class="time-btn" onclick="toggle('t18')">18:00 — PHIÊN HỌC</div>
         <div id="t18" class="section">
+            
             <div class="class-btn" onclick="toggle('listA1')">LỚP A1 ▼</div>
             <div id="listA1" class="section" data-class="A1">
-                
                 <div class="student-card" id="st1">
                     <div>1. Nguyễn Văn A</div>
                     <div class="btn-group">
-                        <button class="btn-yes" onclick="setAttendance('st1', false, 'A1')">Có mặt</button>
+                        <button class="btn-yes" onclick="setAttendance('st1', false, 'A1')">Có</button>
                         <button class="btn-no" onclick="setAttendance('st1', true, 'A1')">Vắng</button>
+                        <button class="btn-move" onclick="moveStudent('st1', 'listA2', 'A2')">Chuyển A2</button>
                         <a href="tel:0901234567" class="btn-call">📞 Gọi</a>
                     </div>
                     <select onchange="updateClassAbsentList('A1')">
                         <option value="">-- Ghi chú --</option>
                         <option value="Nghỉ phép">Nghỉ phép</option>
                         <option value="Đi muộn">Đi muộn</option>
-                        <option value="Quên sách">Quên sách</option>
                     </select>
                 </div>
-
                 <div class="class-absent-list" id="absent-A1">Danh sách vắng: Không có</div>
-                <button class="btn-copy" onclick="copyAbsentList('A1')">📋 Copy danh sách vắng</button>
+                <button class="btn-copy" onclick="copyAbsentList('A1')">📋 Copy DS Vắng A1</button>
+            </div>
+
+            <div class="class-btn" onclick="toggle('listA2')">LỚP A2 ▼</div>
+            <div id="listA2" class="section" data-class="A2">
+                <div class="class-absent-list" id="absent-A2">Danh sách vắng: Không có</div>
             </div>
         </div>
     </div>
@@ -72,6 +71,19 @@
             updateClassAbsentList(className);
         }
 
+        function moveStudent(sid, targetListId, targetClass) {
+            const card = document.getElementById(sid);
+            const targetList = document.getElementById(targetListId);
+            targetList.appendChild(card);
+            // Cập nhật lại onclick cho các nút sau khi chuyển
+            card.querySelector('.btn-yes').setAttribute('onclick', `setAttendance('${sid}', false, '${targetClass}')`);
+            card.querySelector('.btn-no').setAttribute('onclick', `setAttendance('${sid}', true, '${targetClass}')`);
+            card.querySelector('select').setAttribute('onchange', `updateClassAbsentList('${targetClass}')`);
+            
+            alert("Đã chuyển học sinh sang " + targetClass);
+            updateClassAbsentList(targetClass);
+        }
+
         function updateClassAbsentList(className) {
             const container = document.getElementById('list' + className);
             const absents = Array.from(container.querySelectorAll('.is-absent')).map(card => {
@@ -79,7 +91,6 @@
                 const note = card.querySelector('select').value;
                 return name + (note ? " [" + note + "]" : "");
             });
-            
             document.getElementById('absent-' + className).innerHTML = 
                 "Danh sách vắng:<br>" + (absents.length ? absents.join('<br>') : "Không có");
         }
@@ -91,16 +102,9 @@
                 const note = card.querySelector('select').value;
                 return name + (note ? " [" + note + "]" : "");
             });
-
-            if (absents.length === 0) {
-                alert("Danh sách vắng trống!");
-                return;
-            }
-
-            const textToCopy = "DANH SÁCH VẮNG LỚP " + className + ":\n" + absents.join('\n');
-            navigator.clipboard.writeText(textToCopy).then(() => {
-                alert("Đã copy danh sách vắng!");
-            });
+            if (absents.length === 0) { alert("DS vắng trống!"); return; }
+            navigator.clipboard.writeText("DS VẮNG LỚP " + className + ":\n" + absents.join('\n'));
+            alert("Đã copy!");
         }
     </script>
 </body>
