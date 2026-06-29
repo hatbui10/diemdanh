@@ -67,14 +67,14 @@
 <body>
 
 <div class="container">
-    <select id="timeDropdown">
+    <select id="caHoc">
             <option value="18:00">18:00</option>
             <option value="18:15">18:15</option>
             <option value="18:30">18:30</option>
             <option value="19:00">18:45</option>
              <option value="19:00">20:00</option>
         </select>
-        <select id="className">
+        <select id="tenLop">
             <option value="SKY-KID">SKY-KID  T2-237</option>
             <option value="12A1">12A1</option>
             <option value="SMART-KID">SMART-KID  T2-237</option>
@@ -126,7 +126,7 @@
     <button onclick="taoHopMoi()">XÁC NHẬN</button>
     <div id="danhSachHop"></div>
 </div>
-
+< nếu bên dưới chưa khai báo lớp thì khi chọn lớp để hiện thị sẽ bị lỗi , lớp 12A1 thì lại ko lỗi do đã khai báo>
 <script>
     const dataHocSinh = {
         "12A1": [
