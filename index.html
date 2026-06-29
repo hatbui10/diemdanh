@@ -5,7 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Premium Class Manager</title>
     <style>
-        body { background: #0c0d0f; color: #d1d5db; font-family: 'Segoe UI', sans-serif; margin: 30px 3px 0 3px; }
+        body { 
+            background: #0c0d0f; 
+            color: #d1d5db; 
+            font-family: 'Segoe UI', sans-serif; 
+            margin: 30px 3px 0 3px; 
+        }
         .main-btn { background: rgba(255, 255, 255, 0.05); border: 1px solid #fbbf24; color: #fbbf24; padding: 20px; text-align: center; border-radius: 12px; cursor: pointer; font-weight: bold; }
         
         .section { display: none; margin-left: 15px; border-left: 1px solid #334155; padding-left: 15px; }
@@ -35,31 +40,43 @@
     <div id="day2" class="section">
         <div class="time-btn" onclick="toggle('t18')">18:00 — PHIÊN HỌC</div>
         <div id="t18" class="section">
-            <div class="class-btn" onclick="toggle('listA1')">LỚP A1 ▼</div>
-            <div id="listA1" class="section" data-class="A1">
+            <div class="class-btn" onclick="toggle('listSKY-KID')">LỚP SKY-KID ▼</div>
+            <div id="listSKY-KID" class="section" data-class="SKY-KID">
                 
                 <div class="student-card" id="st1">
-                    <div>1. Nguyễn Văn A</div>
+                    <div>1. Nguyễn An Nhiên (Bơ)</div>
                     <div class="btn-group">
-                        <button class="btn-yes" onclick="setAttendance('st1', false, 'A1')">Có mặt</button>
-                        <button class="btn-no" onclick="setAttendance('st1', true, 'A1')">Vắng</button>
-                        <a href="tel:0901234567" class="btn-call">📞 Gọi</a>
+                        <button class="btn-yes" onclick="setAttendance('st1', false, 'SKY-KID')">Có mặt</button>
+                        <button class="btn-no" onclick="setAttendance('st1', true, 'SKY-KID')">Vắng</button>
+                        <a href="tel:0396963955" class="btn-call">📞 Gọi</a>
                     </div>
-                    <select onchange="updateClassAbsentList('A1')">
+                    <select onchange="updateClassAbsentList('SKY-KID')">
                         <option value="">-- Ghi chú --</option>
                         <option value="Nghỉ phép">Nghỉ phép</option>
                         <option value="Đi muộn">Đi muộn</option>
                         <option value="Quên sách">Quên sách</option>
                     </select>
                 </div>
-
-                <div class="class-absent-list" id="absent-A1">Danh sách vắng: Không có</div>
-                <button class="btn-copy" onclick="copyAbsentList('A1')">📋 Copy danh sách vắng</button>
+                
+                <div class="class-absent-list" id="absent-SKY-KID">Danh sách vắng: Không có</div>
+                <button class="btn-copy" onclick="copyAbsentList('SKY-KID')">📋 Copy danh sách vắng</button>
             </div>
         </div>
     </div>
 
     <script>
+        window.onload = function() {
+            // Load trạng thái vắng từ LocalStorage
+            const savedData = JSON.parse(localStorage.getItem('attendanceData') || '{}');
+            for (let sid in savedData) {
+                if (savedData[sid]) {
+                    const card = document.getElementById(sid);
+                    if (card) card.classList.add('is-absent');
+                }
+            }
+            updateClassAbsentList('SKY-KID');
+        };
+
         function toggle(id) {
             const el = document.getElementById(id);
             el.classList.toggle('active');
@@ -69,13 +86,20 @@
         function setAttendance(sid, isAbsent, className) {
             const card = document.getElementById(sid);
             isAbsent ? card.classList.add('is-absent') : card.classList.remove('is-absent');
+            
+            // Lưu vào LocalStorage
+            const savedData = JSON.parse(localStorage.getItem('attendanceData') || '{}');
+            savedData[sid] = isAbsent;
+            localStorage.setItem('attendanceData', JSON.stringify(savedData));
+            
             updateClassAbsentList(className);
         }
 
         function updateClassAbsentList(className) {
             const container = document.getElementById('list' + className);
             const absents = Array.from(container.querySelectorAll('.is-absent')).map(card => {
-                const name = card.querySelector('div').innerText.split('. ')[1];
+                const divText = card.querySelector('div').innerText;
+                const name = divText.substring(divText.indexOf('.') + 1).trim();
                 const note = card.querySelector('select').value;
                 return name + (note ? " [" + note + "]" : "");
             });
@@ -87,7 +111,8 @@
         function copyAbsentList(className) {
             const container = document.getElementById('list' + className);
             const absents = Array.from(container.querySelectorAll('.is-absent')).map(card => {
-                const name = card.querySelector('div').innerText.split('. ')[1];
+                const divText = card.querySelector('div').innerText;
+                const name = divText.substring(divText.indexOf('.') + 1).trim();
                 const note = card.querySelector('select').value;
                 return name + (note ? " [" + note + "]" : "");
             });
