@@ -2,6 +2,8 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
     <title>Quản Lý Lớp Học</title>
     <style>
         body { 
@@ -75,16 +77,21 @@
 <script>
     // Dữ liệu học sinh được chia theo Tên Lớp (Key của Object)
     const dataHocSinh = {
-        "12A1": [
-            { id: 101, ten: "Nguyễn Văn An", sdt: "0901234567" },
-            { id: 102, ten: "Trần Thị Bình", sdt: "0912345678" }
-        ],
-        "12B2": [
-            { id: 201, ten: "Lê Văn Cường", sdt: "0922222222" },
-            { id: 202, ten: "Phạm Minh Đức", sdt: "0933333333" },
-            { id: 203, ten: "Hoàng Thu Thảo", sdt: "0944444444" }
-        ]
-    };
+    "12A1": [
+        { id: "hs_12A1_01", ten: "Nguyễn An Nhiên (Bơ)", sdt: "0396963955" },
+        { id: "hs_12A1_02", ten: "Nguyễn Trung Đức (Bon)", sdt: "0339804981" },
+        { id: "hs_12A1_03", ten: "Đặng Đình Bách", sdt: "0904511462" },
+        { id: "hs_12A1_04", ten: "Lâm Duy Anh", sdt: "0902239258" },
+        { id: "hs_12A1_05", ten: "Vũ Nguyễn Hải Anh 23/11/20", sdt: "0336076895" },
+        { id: "hs_12A1_06", ten: "Lan Anh em Tuấn Anh B", sdt: "KhôngcóSĐT" },
+        { id: "hs_12A1_07", ten: "Đặng Khánh Ngân", sdt: "0942093566" },
+        { id: "hs_12A1_08", ten: "Trần Lê Tuệ Linh", sdt: "0988742202" },
+        { id: "hs_12A1_09", ten: "Nguyễn Trâm Anh", sdt: "0919403848" },
+        { id: "hs_12A1_10", ten: "Nguyễn Tú Anh", sdt: "0919403848" },
+        { id: "hs_12A1_11", ten: "Nguyễn Hà My", sdt: "0943681990" },
+        { id: "hs_12A1_12", ten: "Hoàng Ngọc Phương Linh", sdt: "0912731673" }
+    ]
+};
     
     // Đối tượng lưu trữ trạng thái [boxId][studentId] = ghi_chu và [boxId]['lop'] = ten_lop
     const danhSachVangData = {};
@@ -152,12 +159,12 @@
                 <div class="student-info">${hs.ten} <small>(${hs.sdt})</small></div>
                 
                 <div class="student-actions">
-                    <button class="btn-action" onclick="event.stopPropagation(); bieuDienVang('${boxId}', ${hs.id}, true)">Vắng</button>
-                    <button class="btn-action" onclick="event.stopPropagation(); bieuDienVang('${boxId}', ${hs.id}, false)">Đi học</button>
+                    <button class="btn-action" onclick="event.stopPropagation(); bieuDienVang('${boxId}', '${hs.id}', true)">Vắng</button>
+                    <button class="btn-action" onclick="event.stopPropagation(); bieuDienVang('${boxId}', '${hs.id}', false)">Đi học</button>
                     <a href="tel:${hs.sdt}" onclick="event.stopPropagation();"><button class="btn-action btn-goi">Gọi</button></a>
                 </div>
 
-                <select class="student-note" onclick="event.stopPropagation();" onchange="capNhatGhiChu('${boxId}', ${hs.id}, this.value)">
+                <select class="student-note" onclick="event.stopPropagation();" onchange="capNhatGhiChu('${boxId}', '${hs.id}', this.value)">
                     ${selectOptions}
                 </select>
             `;
