@@ -126,31 +126,51 @@
             
         </select>
     
-    <select id="phongHoc"><option>Phòng 101</option><option>Phòng 102</option></select>
+    <select id="phongHoc">
+        <option>T1-30</option>
+        <option>T2-30</option>
+        <option>T3-30</option>
+        <option>T1-158</option>
+        <option>T2-58</option>
+        <option>T3-58</option>
+        <option>T2-158</option>
+        <option>T3-158</option>
+        <option>T4-158</option>
+        <option>T2-237</option>
+        <option>T3-237</option>
+        <option>T4-237</option>
+        <option>T5-237</option>
+        <option>T6-237</option>
+        
     <button onclick="taoHopMoi()">XÁC NHẬN</button>
     <div id="danhSachHop"></div>
 </div>
 
 <script>
     const dataHocSinh = {
-        "12A1": [
-            { id: "hs_12A1_01", ten: "Nguyễn An Nhiên (Bơ)", sdt: "0396963955" },
-            { id: "hs_12A1_02", ten: "Nguyễn Trung Đức (Bon)", sdt: "0339804981" },
-            { id: "hs_12A1_03", ten: "Đặng Đình Bách", sdt: "0904511462" },
-            { id: "hs_12A1_04", ten: "Lâm Duy Anh", sdt: "0902239258" },
-            { id: "hs_12A1_05", ten: "Vũ Nguyễn Hải Anh 23/11/20", sdt: "0336076895" },
-            { id: "hs_12A1_06", ten: "Lan Anh em Tuấn Anh B", sdt: "KhôngcóSĐT" },
-            { id: "hs_12A1_07", ten: "Đặng Khánh Ngân", sdt: "0942093566" },
-            { id: "hs_12A1_08", ten: "Trần Lê Tuệ Linh", sdt: "0988742202" },
-            { id: "hs_12A1_09", ten: "Nguyễn Trâm Anh", sdt: "0919403848" },
-            { id: "hs_12A1_10", ten: "Nguyễn Tú Anh", sdt: "0919403848" },
-            { id: "hs_12A1_11", net: "Nguyễn Hà My", sdt: "0943681990" },
-            { id: "hs_12A1_12", ten: "Hoàng Ngọc Phương Linh", sdt: "0912731673" }
-        ],
-        "12B2": [
-            { id: "hs_12B2_01", ten: "Lê Văn Cường", sdt: "0922222222" },
-            { id: "hs_12B2_02", ten: "Phạm Minh Đức", sdt: "0933333333" }
-        ]
+         "SMART-KID": [
+        { id: "hs_SMART-KID_01", ten: "Phạm Gia Huy", sdt: "0378903698" },
+        { id: "hs_SMART-KID_02", ten: "Nguyễn Mai Anh", sdt: "0978226749" },
+        { id: "hs_SMART-KID_03", ten: "Nguyễn Duy Minh Quang (Sóc)", sdt: "0914242132" },
+        { id: "hs_SMART-KID_04", ten: "Phạm Cát Tiên", sdt: "0911898323" },
+        { id: "hs_SMART-KID_05", ten: "Trịnh Phúc An", sdt: "0971227992" },
+        { id: "hs_SMART-KID_06", ten: "Yên Lệ Nhật Minh (Mít)", sdt: "0919281776" },
+        { id: "hs_SMART-KID_07", ten: "Nguyễn Đoàn Gia Mỹ", sdt: "0335738702" },
+        { id: "hs_SMART-KID_08", ten: "Lê Minh Huy", sdt: "0914373384" }
+    ],
+       "SMILE-L6/Hà An": [
+        { id: "hs_SMILE-L6/Hà An_01", ten: "Dương Ngọc Thảo Anh", sdt: "0348738159" },
+        { id: "hs_SMILE-L6/Hà An_02", ten: "Nguyễn Tiến Sơn", sdt: "0972472383" },
+        { id: "hs_SMILE-L6/Hà An_03", ten: "Trần Hồ Đức Lượng", sdt: "0939142870" },
+        { id: "hs_SMILE-L6/Hà An_04", ten: "Nguyễn Phú Thảo (trai)", sdt: "0912642998" },
+        { id: "hs_SMILE-L6/Hà An_05", ten: "Tạ Hồng Phương Vy", sdt: "0936255655" },
+        { id: "hs_SMILE-L6/Hà An_06", ten: "Bùi Đức Bảo An", sdt: "0396274479" },
+        { id: "hs_SMILE-L6/Hà An_07", ten: "Đỗ Minh Khoa", sdt: "0373733368" },
+        { id: "hs_SMILE-L6/Hà An_08", ten: "Nguyễn Hữu Bảo Phú", sdt: "0983520087" },
+        { id: "hs_SMILE-L6/Hà An_09", ten: "Trần Xuân Phú", sdt: "0905583399" },
+        { id: "hs_SMILE-L6/Hà An_10", ten: "Nguyễn Minh Triết", sdt: "0335738702" },
+        { id: "hs_SMILE-L6/Hà An_11", ten: "Nguyễn Đức Quang", sdt: "0982262873" }
+    ]
     };
     
     let danhSachVangData = JSON.parse(localStorage.getItem('danhSachVangData')) || {};
