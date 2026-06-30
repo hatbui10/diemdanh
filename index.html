@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -27,7 +28,10 @@
         
         /* Khu vực danh sách vắng ở trên */
         .absent-section { background: #fff5f5; border: 1px dashed #e53e3e; border-radius: 10px; padding: 10px; margin-bottom: 15px; }
-        .absent-section h4 { margin: 0 0 8px 0; color: #e53e3e; font-size: 0.95em; }
+        .absent-header-wrapper { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .absent-section h4 { margin: 0; color: #e53e3e; font-size: 0.95em; }
+        .btn-copy-absent { width: auto; padding: 4px 10px; margin: 0; font-size: 0.8em; border-radius: 6px; background: #e53e3e; color: white; font-weight: normal; }
+        .btn-copy-absent:hover { background: #c53030; }
         
         /* Cấu trúc 2 DÒNG của danh sách vắng (Họ tên - Chữ lý do + Nút gọi) */
         .absent-item { display: flex; flex-direction: column; padding: 8px 5px; border-bottom: 1px dashed #fecaca; gap: 4px; }
@@ -71,8 +75,8 @@
             <option value="18:00">18:00</option>
             <option value="18:15">18:15</option>
             <option value="18:30">18:30</option>
-            <option value="19:00">18:45</option>
-             <option value="19:00">20:00</option>
+            <option value="18:45">18:45</option>
+            <option value="20:00">20:00</option>
         </select>
         <select id="tenLop">
             <option value="SKY-KID">SKY-KID  T2-237</option>
@@ -126,7 +130,7 @@
     <button onclick="taoHopMoi()">XÁC NHẬN</button>
     <div id="danhSachHop"></div>
 </div>
-< nếu bên dưới chưa khai báo lớp thì khi chọn lớp để hiện thị sẽ bị lỗi , lớp 12A1 thì lại ko lỗi do đã khai báo>
+
 <script>
     const dataHocSinh = {
         "12A1": [
@@ -140,7 +144,7 @@
             { id: "hs_12A1_08", ten: "Trần Lê Tuệ Linh", sdt: "0988742202" },
             { id: "hs_12A1_09", ten: "Nguyễn Trâm Anh", sdt: "0919403848" },
             { id: "hs_12A1_10", ten: "Nguyễn Tú Anh", sdt: "0919403848" },
-            { id: "hs_12A1_11", ten: "Nguyễn Hà My", sdt: "0943681990" },
+            { id: "hs_12A1_11", net: "Nguyễn Hà My", sdt: "0943681990" },
             { id: "hs_12A1_12", ten: "Hoàng Ngọc Phương Linh", sdt: "0912731673" }
         ],
         "12B2": [
@@ -191,7 +195,10 @@
             </div>
             <div class="list" style="display:none;">
                 <div class="absent-section" style="display: none;">
-                    <h4>DANH SÁCH VẮNG (<span class="absent-count">0</span>)</h4>
+                    <div class="absent-header-wrapper">
+                        <h4>DANH SÁCH VẮNG (<span class="absent-count">0</span>)</h4>
+                        <button class="btn-copy-absent" onclick="copyDanhSachVang(event, '${boxId}', '${boxTitle}')">Copy nhanh</button>
+                    </div>
                     <div class="absent-list"></div>
                 </div>
                 <div class="main-student-list"></div>
@@ -199,7 +206,7 @@
         `;
         
         div.onclick = function(e) { 
-            if(e.target === this || e.target.className === 'box-header' || e.target.className === 'box-title' || e.target.className === 'box-stats') {
+            if(e.target === this || e.target.className === 'box-header' || e.target.className === 'box-title' || e.target.className === 'box-stats' || e.target.className === 'absent-header-wrapper') {
                 const list = this.querySelector('.list');
                 list.style.display = list.style.display === 'none' ? 'block' : 'none';
             }
@@ -207,7 +214,7 @@
 
         const mainListDiv = div.querySelector('.main-student-list');
         
-        dataHocSinh[lopKey].forEach(hs => {
+        danhSachHocSinhCuaLop.forEach(hs => {
             const item = document.createElement('div');
             item.className = 'student-item';
             item.setAttribute('data-id', hs.id);
@@ -325,6 +332,38 @@
         });
     }
 
+    function copyDanhSachVang(event, boxId, boxTitle) {
+        event.stopPropagation();
+        const danhSachVangHienTai = danhSachVangData[boxId] || {};
+        const lopKey = danhSachVangHienTai._lopKey;
+        const listHocSinhCuaLop = dataHocSinh[lopKey] || [];
+        const cacStudentIdVang = Object.keys(danhSachVangHienTai).filter(k => !k.startsWith('_'));
+
+        if(cacStudentIdVang.length === 0) {
+            alert("Không có học sinh vắng để copy!");
+            return;
+        }
+
+        let textCopy = `Danh sách vắng:\n ${boxTitle}\n`;
+        textCopy += `Vắng: ${cacStudentIdVang.length}\n`;
+        textCopy += `---------------------------\n`;
+        
+        cacStudentIdVang.forEach((studentId, index) => {
+            const infoHs = listHocSinhCuaLop.find(h => h.id == studentId);
+            if(infoHs) {
+                const maGhiChu = danhSachVangHienTai[studentId];
+                const textLyoDo = ghiChuOptions[maGhiChu] || "Chưa chọn lý do";
+                textCopy += `${index + 1}. ${infoHs.ten} \n Lý do: ${textLyoDo}\n`;
+            }
+        });
+
+        navigator.clipboard.writeText(textCopy).then(() => {
+            alert("Đã copy danh sách vắng thành công!");
+        }).catch(err => {
+            alert("Lỗi khi copy: ", err);
+        });
+    }
+
     function xoaHopLop(event, boxId) {
         event.stopPropagation();
         if(confirm("Bạn có chắc chắn muốn xóa lớp học này không?")) {
@@ -347,4 +386,5 @@
     };
 </script>
 </body>
-</html>
+                </html>
+                
