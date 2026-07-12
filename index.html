@@ -6,6 +6,7 @@
     <title>Bộ Lọc Học Viên Điểm Danh Chia Lớp</title>
     
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
     
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -268,7 +269,7 @@ function startProcessingExcel(input) {
                     
                     localStorage.setItem('big_classes_database', JSON.stringify(bigClassesDatabase));
                     localStorage.setItem('big_classes_filename', file.name);
-                    
+                    await window.saveToFirebase();
                     renderFullSystemUI();
                     return;
                 }
@@ -699,6 +700,99 @@ function clearSystemCache() {
         document.getElementById('fileStatusMessage').innerText = "Chưa có dữ liệu học viên. Vui lòng chọn tệp Excel.";
     }
 }
+</script>
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+import {
+    getFirestore,
+    doc,
+    setDoc,
+    getDoc
+
+} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDbCF0pFsdXqD14Y-wjWLFoNCGfP1LBlD8",
+  authDomain: "tienganhhavi-12b54.firebaseapp.com",
+  projectId: "tienganhhavi-12b54",
+  storageBucket: "tienganhhavi-12b54.firebasestorage.app",
+  messagingSenderId: "208059039650",
+  appId: "1:208059039650:web:d272318418e01d0f50fcfb",
+  measurementId: "G-XPHJWRWSLZ"
+};
+
+const app = initializeApp(firebaseConfig);
+
+const db = getFirestore(app);
+window.saveToFirebase = async function () {
+
+    try {
+
+        await setDoc(
+            doc(db, "system", "database"),
+            {
+                database: bigClassesDatabase,
+                filename: localStorage.getItem("big_classes_filename") || "",
+                updatedAt: new Date().toISOString()
+            }
+        );
+
+        console.log("Đã lưu Firebase");
+
+    } catch (err) {
+
+        console.error("Lỗi lưu Firebase:", err);
+
+    }
+
+}
+window.loadFromFirebase = async function () {
+
+    try {
+
+        const docRef = doc(db, "system", "database");
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+
+            const data = docSnap.data();
+
+            bigClassesDatabase = data.database || {};
+
+            if (data.filename) {
+                localStorage.setItem("big_classes_filename", data.filename);
+            }
+
+            renderFullSystemUI();
+
+            console.log("Đã tải dữ liệu từ Firebase");
+
+        } else {
+
+            console.log("Chưa có dữ liệu trên Firebase");
+
+        }
+
+    } catch (err) {
+
+        console.error("Lỗi đọc Firebase:", err);
+
+    }
+
+}
+window.testFirebase = async function () {
+
+    await window.saveToFirebase();
+
+}
+
+window.db = db;
+
+console.log("Đã kết nối Firebase");
+
+window.saveToFirebase();
+window.loadFromFirebase();
 </script>
 </body>
 </html>
