@@ -30,7 +30,7 @@
             padding: 12px 5px; 
             font-weight: bold; 
             font-size: 0.85rem; 
-            border-radius: 4px; 
+            border-radius: 25px; 
             cursor: pointer; 
             text-transform: uppercase; 
             text-align: center;
@@ -49,7 +49,7 @@
             padding: 12px 5px; 
             font-weight: bold; 
             font-size: 0.85rem; 
-            border-radius: 4px; 
+            border-radius: 20px; 
             cursor: pointer; 
             text-transform: uppercase; 
             text-align: center;
@@ -145,7 +145,7 @@
         <label for="excelFileInput" class="custom-upload-btn">📂 Tải lên File Excel</label>
         <input type="file" id="excelFileInput" accept=".xlsx, .xls" style="display: none;" onchange="startProcessingExcel(this)">
         
-        <button class="btn-danger-top" onclick="clearSystemCache()">🗑️ XÓA dữ liệu CŨ</button>
+        <button class="btn-danger-top" onclick="clearSystemCache()"> XÓA dữ liệu CŨ</button>
     </div>
     
     <div id="fileStatusMessage" class="file-status">Chưa có dữ liệu học viên. Vui lòng chọn tệp Excel.</div>
@@ -336,7 +336,7 @@ function startProcessingExcel(input) {
                                 cleanPhone.length >= 9 &&
                                 cleanPhone.length <= 11
                             ) {
-                                let currentClassKey = detectedClassName || `Chung Khối - ${sheetName}`;
+                                let currentClassKey = detectedClassName ;
 
                                 if (!bigClassesDatabase[currentClassKey]) {
                                     bigClassesDatabase[currentClassKey] = {
@@ -481,7 +481,7 @@ function renderStudentCardsHtml(classKey, students) {
                     </div>
                     <div class="student-actions-right">
                         <button class="btn-call" onclick="callPhoneAction('${student.phone}')">📞</button>
-                        <button class="btn-delete" onclick="deleteStudentFromClass('${classKey}', ${student.id}, '${student.name.replace(/'/g, "\\'")}')">🗑️</button>
+                        <button class="btn-delete" onclick="deleteStudentFromClass('${classKey}', ${student.id}, '${student.name.replace(/'/g, "\\'")}')">Xoá</button>
                     </div>
                 </div>
                 <div class="student-controls-row">
