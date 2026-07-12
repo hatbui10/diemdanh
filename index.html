@@ -194,25 +194,23 @@ function displayPhone(p) {
     return p; 
 }
 
-// KHỞI CHẠY KHÔI PHỤC DỮ LIỆU TỪ BỘ NHỚ TRÌNH DUYỆT
-window.onload = function() {
-    const cachedData = localStorage.getItem('big_classes_database');
-    const cachedFileName = localStorage.getItem('big_classes_filename');
-    
-    if (cachedData) {
-        bigClassesDatabase = JSON.parse(cachedData);
-        
-        // Đếm tổng số học viên trong cache
-        let totalCount = 0;
-        Object.keys(bigClassesDatabase).forEach(k => {
-            totalCount += bigClassesDatabase[k].students.length;
-        });
+window.onload = async function () {
 
-        document.getElementById('fileStatusMessage').style.color = "#00ff66";
-        document.getElementById('fileStatusMessage').innerText = `✅ Đã khôi phục lớp từ bộ nhớ (${totalCount} học viên): ${cachedFileName || "Ẩn danh"}`;
-        renderFullSystemUI();
+    try {
+        await window.loadFromFirebase();
+
+    } catch (e) {
+
+        const cachedData = localStorage.getItem("big_classes_database");
+
+        if (cachedData) {
+            bigClassesDatabase = JSON.parse(cachedData);
+            renderFullSystemUI();
+        }
+
     }
-};
+
+}
 
 // THUẬT TOÁN ĐỌC FILE EXCEL & TỰ ĐỘNG PHÂN TÁCH LỚP HỌC ĐỘNG CHUẨN XÁC
 function startProcessingExcel(input) {
@@ -253,7 +251,7 @@ function startProcessingExcel(input) {
            let totalSheets = sheetsToProcess.length;
             let currentSheetIdx = 0;
 
-            function parseSheetStep() {
+            async function parseSheetStep() {
                 if (currentSheetIdx >= totalSheets) {
                     progressBar.style.width = '100%';
                     progressBar.innerText = '100% Hoàn thành';
@@ -269,7 +267,8 @@ function startProcessingExcel(input) {
                     
                     localStorage.setItem('big_classes_database', JSON.stringify(bigClassesDatabase));
                     localStorage.setItem('big_classes_filename', file.name);
-                    await window.saveToFirebase();
+                    
+					await saveDatabaseState();
                     renderFullSystemUI();
                     return;
                 }
@@ -603,8 +602,15 @@ function copyAbsentReport(classKey) {
     }).catch(() => alert('Lỗi không thể tự động copy.'));
 }
 
-function saveDatabaseState() {
-    localStorage.setItem('big_classes_database', JSON.stringify(bigClassesDatabase));
+async function saveDatabaseState() {
+
+    localStorage.setItem(
+        'big_classes_database',
+        JSON.stringify(bigClassesDatabase)
+    );
+
+    await window.saveToFirebase();
+
 }
 
 function callPhoneAction(phone) {
@@ -759,6 +765,10 @@ window.loadFromFirebase = async function () {
             const data = docSnap.data();
 
             bigClassesDatabase = data.database || {};
+			localStorage.setItem(
+    "big_classes_database",
+    JSON.stringify(bigClassesDatabase)
+);
 
             if (data.filename) {
                 localStorage.setItem("big_classes_filename", data.filename);
@@ -781,6 +791,8 @@ window.loadFromFirebase = async function () {
     }
 
 }
+
+
 window.testFirebase = async function () {
 
     await window.saveToFirebase();
@@ -791,7 +803,7 @@ window.db = db;
 
 console.log("Đã kết nối Firebase");
 
-window.saveToFirebase();
+
 window.loadFromFirebase();
 </script>
 </body>
