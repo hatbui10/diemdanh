@@ -1,4 +1,6 @@
-<!DOCTYPE html>
+localStorage.clear();
+sessionStorage.clear();
+location.reload();<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
@@ -282,6 +284,7 @@ function startProcessingExcel(input) {
                     const colPIndex = 16; 
 
                     let detectedClassName = "";
+let previousText = "";
 
                     rows.forEach((row, rowIndex) => {
                         if (!row) return;
@@ -293,12 +296,31 @@ function startProcessingExcel(input) {
                         let cellB_lower = cellB.toLowerCase();
                         let cleanPhoneCheck = cellP.replace(/[^0-9]/g, "");
 
-                        if (cellB && cleanPhoneCheck.length < 9 && 
-                            (cellB.includes("-") || cellB.includes("/") || cellA.match(/^(I|II|III|IV|V|VI|VII|VIII|IX|X)\b/) || cellB_lower.includes("kid") || cellB_lower.includes("smile") || cellB_lower.includes("happy") || cellB_lower.includes("athena") || cellB_lower.includes("win"))) {
-                            
-                            detectedClassName = cellB; 
-                            return;
-                        }
+                        // ================= NHẬN DIỆN TÊN LỚP =================
+
+const isSchedule =
+    /^t[2-7]/i.test(cellB) ||
+    /^cn/i.test(cellB) ||
+    /18h|19h|20h/i.test(cellB) ||
+    cellB.includes("THỨ");
+
+if (isSchedule) {
+    if (previousText) {
+        detectedClassName = previousText;
+    }
+    return;
+}
+
+// lưu lại dòng hiện tại để dùng nếu dòng sau là lịch học
+if (
+    cellB &&
+    cleanPhoneCheck.length < 9 &&
+    cellB_lower !== "tên học sinh" &&
+    cellB_lower !== "tên hs" &&
+    cellB_lower !== "họ và tên"
+) {
+    previousText = cellB;
+}
 
                         if (cellB === "" || cellB_lower === "tên học sinh" || cellB_lower === "tên hs" || cellB_lower === "họ và tên") {
                             return;
