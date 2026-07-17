@@ -154,9 +154,8 @@
 </div>
 
 <script>
-const targetDataSheets = ["SV", "12", "11", "10", "9", "8", "7", "6", "5", "4", "3", "2", "DH25", "DH26"];
-let masterStudentsDatabase = {}; 
-let daySchedulesStructure = {
+window.masterStudentsDatabase = {}; 
+window.daySchedulesStructure = {
     "THU_2": { name: "Thứ Hai", classes: [] },
     "THU_3": { name: "Thứ Ba", classes: [] },
     "THU_4": { name: "Thứ Tư", classes: [] },
@@ -166,7 +165,7 @@ let daySchedulesStructure = {
     "CHU_NHAT": { name: "Chủ Nhật", classes: [] }
 };
 
-// Mảng khóa cứng thứ tự phân định giao diện tránh lỗi Firebase đảo lộn vị trí map
+const targetDataSheets = ["SV", "12", "11", "10", "9", "8", "7", "6", "5", "4", "3", "2", "DH25", "DH26"];
 const hardcodedDayKeysOrder = ["THU_2", "THU_3", "THU_4", "THU_5", "THU_6", "THU_7", "CHU_NHAT"];
 
 function displayPhone(p) { 
@@ -178,15 +177,23 @@ function displayPhone(p) {
 
 window.onload = async function () {
     try {
-        await window.loadFromFirebase();
-    } catch (e) {
-        const cachedDb = localStorage.getItem("master_students_db");
-        const cachedStruct = localStorage.getItem("day_schedules_struct");
-        if (cachedDb && cachedStruct) {
-            masterStudentsDatabase = JSON.parse(cachedDb);
-            daySchedulesStructure = JSON.parse(cachedStruct);
-            renderSystemUIByDay();
+        if (typeof window.loadFromFirebase === "function") {
+            await window.loadFromFirebase();
+        } else {
+            loadLocalCacheBackup();
         }
+    } catch (e) {
+        loadLocalCacheBackup();
+    }
+}
+
+function loadLocalCacheBackup() {
+    const cachedDb = localStorage.getItem("master_students_db");
+    const cachedStruct = localStorage.getItem("day_schedules_struct");
+    if (cachedDb && cachedStruct) {
+        window.masterStudentsDatabase = JSON.parse(cachedDb);
+        window.daySchedulesStructure = JSON.parse(cachedStruct);
+        window.renderSystemUIByDay();
     }
 }
 
@@ -198,8 +205,8 @@ function startProcessingExcel(input) {
     document.getElementById('progressContainer').style.display = 'block';
     document.getElementById('progressBar').style.width = '10%';
 
-    masterStudentsDatabase = {};
-    Object.keys(daySchedulesStructure).forEach(k => daySchedulesStructure[k].classes = []);
+    window.masterStudentsDatabase = {};
+    Object.keys(window.daySchedulesStructure).forEach(k => window.daySchedulesStructure[k].classes = []);
 
     const reader = new FileReader();
     reader.onload = function(e) {
@@ -214,48 +221,57 @@ function startProcessingExcel(input) {
                 return;
             }
 
-            const rowsL = XLSX.utils.sheet_to_json(sheetL, { header: 1, raw: false });
-            if (rowsL.length > 0) {
-                let colToDayMap = {};
-                
-                let foundDaysRow = false;
-                for (let r = 0; r < Math.min(rowsL.length, 5); r++) {
-                    const currentRow = rowsL[r] || [];
-                    for (let c = 0; c < currentRow.length; c++) {
-                        let cellVal = currentRow[c] ? currentRow[c].toString().trim().toUpperCase() : "";
-                        if (cellVal.includes("THỨ 2") || cellVal === "T2") { colToDayMap[c] = "THU_2"; foundDaysRow = true; }
-                        else if (cellVal.includes("THỨ 3") || cellVal === "T3") { colToDayMap[c] = "THU_3"; foundDaysRow = true; }
-                        else if (cellVal.includes("THỨ 4") || cellVal === "T4") { colToDayMap[c] = "THU_4"; foundDaysRow = true; }
-                        else if (cellVal.includes("THỨ 5") || cellVal === "T5") { colToDayMap[c] = "THU_5"; foundDaysRow = true; }
-                        else if (cellVal.includes("THỨ 6") || cellVal === "T6") { colToDayMap[c] = "THU_6"; foundDaysRow = true; }
-                        else if (cellVal.includes("THỨ 7") || cellVal === "T7") { colToDayMap[c] = "THU_7"; foundDaysRow = true; }
-                        else if (cellVal.includes("CN") || cellVal.includes("CHỦ NHẬT")) { colToDayMap[c] = "CHU_NHAT"; foundDaysRow = true; }
-                    }
-                    if (foundDaysRow) break;
-                }
+            const range = XLSX.utils.decode_range(sheetL['!ref']);
+            let colToDayMap = {};
+            let foundDaysRow = false;
 
-                rowsL.forEach((row, rIdx) => {
-                    row.forEach((cell, cIdx) => {
-                        if (!cell) return;
-                        let text = cell.toString().trim();
-                        let textLower = text.toLowerCase();
-                        
-                        if (textLower.includes("sun") || textLower.includes("kid") || textLower.includes("like") || textLower.includes("kind") || textLower.includes("svip") || text.startsWith("E")) {
-                            let dayKey = colToDayMap[cIdx];
-                            if (dayKey) {
-                                let cleanClassName = text.split("\n")[0].trim();
-                                
-                                let isExist = daySchedulesStructure[dayKey].classes.some(c => c.rawText === text);
-                                if (!isExist && cleanClassName.length > 1) {
-                                    daySchedulesStructure[dayKey].classes.push({
-                                        classNameKey: cleanClassName,
-                                        rawText: text
-                                    });
-                                }
+            for (let r = range.s.r; r <= Math.min(range.e.r, 5); r++) {
+                for (let c = range.s.c; c <= range.e.c; c++) {
+                    let cellRef = XLSX.utils.encode_cell({ r: r, c: c });
+                    let cell = sheetL[cellRef];
+                    if (!cell || !cell.v) continue;
+                    
+                    let cellVal = cell.v.toString().trim().toUpperCase();
+                    if (cellVal.includes("THỨ 2") || cellVal === "T2") { colToDayMap[c] = "THU_2"; foundDaysRow = true; }
+                    else if (cellVal.includes("THỨ 3") || cellVal === "T3") { colToDayMap[c] = "THU_3"; foundDaysRow = true; }
+                    else if (cellVal.includes("THỨ 4") || cellVal === "T4") { colToDayMap[c] = "THU_4"; foundDaysRow = true; }
+                    else if (cellVal.includes("THỨ 5") || cellVal === "T5") { colToDayMap[c] = "THU_5"; foundDaysRow = true; }
+                    else if (cellVal.includes("THỨ 6") || cellVal === "T6") { colToDayMap[c] = "THU_6"; foundDaysRow = true; }
+                    else if (cellVal.includes("THỨ 7") || cellVal === "T7") { colToDayMap[c] = "THU_7"; foundDaysRow = true; }
+                    else if (cellVal.includes("CN") || cellVal.includes("CHỦ NHẬT")) { colToDayMap[c] = "CHU_NHAT"; foundDaysRow = true; }
+                }
+                if (foundDaysRow) break;
+            }
+
+            for (let r = range.s.r; r <= range.e.r; r++) {
+                let roomRef = XLSX.utils.encode_cell({ r: r, c: 1 });
+                let roomCell = sheetL[roomRef];
+                let roomLocation = (roomCell && roomCell.v) ? roomCell.v.toString().trim() : "";
+
+                for (let c = range.s.c; c <= range.e.c; c++) {
+                    let cellRef = XLSX.utils.encode_cell({ r: r, c: c });
+                    let cell = sheetL[cellRef];
+                    if (!cell || !cell.v) continue;
+
+                    let text = cell.v.toString().trim();
+                    let textLower = text.toLowerCase();
+                    
+                    if (textLower.includes("sun") || textLower.includes("kid") || textLower.includes("like") || textLower.includes("kind") || textLower.includes("svip") || text.startsWith("E") || textLower.includes("ielts") || textLower.includes("high")) {
+                        let dayKey = colToDayMap[c];
+                        if (dayKey) {
+                            let cleanClassName = text.split("\n")[0].trim();
+                            let fullScheduleText = text + (roomLocation ? "\n📍 Vị trí: " + roomLocation : "");
+
+                            let isExist = window.daySchedulesStructure[dayKey].classes.some(cls => cls.rawText === fullScheduleText);
+                            if (!isExist && cleanClassName.length > 1) {
+                                window.daySchedulesStructure[dayKey].classes.push({
+                                    classNameKey: cleanClassName,
+                                    rawText: fullScheduleText
+                                });
                             }
                         }
-                    });
-                });
+                    }
+                }
             }
 
             document.getElementById('progressBar').style.width = '40%';
@@ -269,15 +285,15 @@ function startProcessingExcel(input) {
                 if (currentSheetIdx >= totalSheets) {
                     document.getElementById('progressBar').style.width = '100%';
                     
-                    localStorage.setItem('master_students_db', JSON.stringify(masterStudentsDatabase));
-                    localStorage.setItem('day_schedules_struct', JSON.stringify(daySchedulesStructure));
+                    localStorage.setItem('master_students_db', JSON.stringify(window.masterStudentsDatabase));
+                    localStorage.setItem('day_schedules_struct', JSON.stringify(window.daySchedulesStructure));
                     localStorage.setItem('big_classes_filename', file.name);
                     
                     await saveDatabaseState();
-                    renderSystemUIByDay();
+                    window.renderSystemUIByDay();
 
                     let countTotal = 0;
-                    Object.keys(masterStudentsDatabase).forEach(k => countTotal += masterStudentsDatabase[k].students.length);
+                    Object.keys(window.masterStudentsDatabase).forEach(k => countTotal += window.masterStudentsDatabase[k].students.length);
                     document.getElementById('fileStatusMessage').innerText = `✅ Đã phân tách thành công lịch trình theo từng cột!\nTập hợp được tổng số ${countTotal} học sinh từ các khối.`;
                     return;
                 }
@@ -314,16 +330,16 @@ function startProcessingExcel(input) {
                         if (readingStudents) {
                             if (cellB && !/^\d+$/.test(cellB) && cleanPhone.length >= 9 && cleanPhone.length <= 11) {
                                 let classKeyUpper = (detectedClassName || "LỚP CHƯA ĐẶT TÊN").toUpperCase();
-                                if (!masterStudentsDatabase[classKeyUpper]) {
-                                    masterStudentsDatabase[classKeyUpper] = {
+                                if (!window.masterStudentsDatabase[classKeyUpper]) {
+                                    window.masterStudentsDatabase[classKeyUpper] = {
                                         sheet: sheetName,
                                         schedule: detectedSchedule,
                                         students: []
                                     };
                                 }
 
-                                masterStudentsDatabase[classKeyUpper].students.push({
-                                    id: masterStudentsDatabase[classKeyUpper].students.length + 1,
+                                window.masterStudentsDatabase[classKeyUpper].students.push({
+                                    id: window.masterStudentsDatabase[classKeyUpper].students.length + 1,
                                     name: cellB,
                                     phone: cleanPhone,
                                     status: "present",
@@ -357,9 +373,8 @@ function startProcessingExcel(input) {
     reader.readAsArrayBuffer(file);
 }
 
-// Hàm đối chiếu thông minh chéo từ khóa tương đối từng từ một
 function findStudentDataMatch(classNameKey) {
-    let keys = Object.keys(masterStudentsDatabase);
+    let keys = Object.keys(window.masterStudentsDatabase);
     let str1 = classNameKey.toUpperCase().replace(/[^A-Z0-9]/g, " ");
     let words1 = str1.split(/\s+/).filter(w => w.length > 1 && w !== "LỚP" && w !== "KHỐI");
 
@@ -369,25 +384,24 @@ function findStudentDataMatch(classNameKey) {
         
         let intersect = words1.filter(w => words2.includes(w));
         if (intersect.some(w => !/^\d+$/.test(w) && w !== "SL" && w !== "GV")) {
-            return { fullKey: k, data: masterStudentsDatabase[k] };
+            return { fullKey: k, data: window.masterStudentsDatabase[k] };
         }
     }
     return null;
 }
 
-function renderSystemUIByDay() {
+window.renderSystemUIByDay = function() {
     const mainContainer = document.getElementById("dynamicMainContainer");
     mainContainer.innerHTML = "";
 
-    let hasData = hardcodedDayKeysOrder.some(k => daySchedulesStructure[k] && daySchedulesStructure[k].classes.length > 0);
+    let hasData = hardcodedDayKeysOrder.some(k => window.daySchedulesStructure[k] && window.daySchedulesStructure[k].classes.length > 0);
     if (!hasData) {
         mainContainer.innerHTML = '<div class="empty-alert">Danh sách trống. Hệ thống đang đợi bạn nạp file Excel để phân chia lớp tự động theo cột!</div>';
         return;
     }
 
-    // Khóa chặt vòng lặp theo đúng thứ tự Thứ Hai -> Chủ Nhật đã thiết lập sẵn
     hardcodedDayKeysOrder.forEach(dayKey => {
-        const dayGroup = daySchedulesStructure[dayKey];
+        const dayGroup = window.daySchedulesStructure[dayKey];
         if (!dayGroup || dayGroup.classes.length === 0) return; 
 
         dayGroup.classes.sort((a, b) => a.rawText.localeCompare(b.rawText, "vi"));
@@ -411,7 +425,15 @@ function renderSystemUIByDay() {
         dayGroup.classes.forEach((clsObj, idx) => {
             const studentMatch = findStudentDataMatch(clsObj.classNameKey);
             let studentList = [];
-            let scheduleText = clsObj.rawText; 
+            let originalScheduleText = clsObj.rawText; 
+
+            // CẮT BỎ TÊN LỚP MÀU TRẮNG: Tách các dòng dữ liệu
+            let textLines = originalScheduleText.split("\n");
+            // Nếu dòng đầu tiên trùng tên lớp vàng thì loại bỏ dòng lặp đó đi
+            if (textLines.length > 0 && textLines[0].trim().toUpperCase() === clsObj.classNameKey.toUpperCase()) {
+                textLines.shift();
+            }
+            let cleanedScheduleText = textLines.join("\n");
 
             if (studentMatch) {
                 studentList = studentMatch.data.students;
@@ -430,7 +452,7 @@ function renderSystemUIByDay() {
             classSection.innerHTML = `
                 <div class="class-accordion-header" onclick="toggleAccordion(this)">
                     <div class="class-main-title">${clsObj.classNameKey}</div>
-                  
+                    <div class="class-schedule" style="white-space: pre-line;">${cleanedScheduleText}</div>
                     <div class="class-stats" id="stats-display-${safeId}">Sĩ số: ${total} | Có mặt: ${present} | Vắng: ${absent}</div>
                 </div>
                 
@@ -447,7 +469,7 @@ function renderSystemUIByDay() {
                     <div class="absent-section">
                         <div class="absent-header">
                             <span class="absent-title">HỌC VIÊN VẮNG MẶT HÔM NAY</span>
-                            <button class="copy-btn" onclick="copyAbsentReport('${clsObj.classNameKey}', '${scheduleText}')">Copy nhanh</button>
+                            <button class="copy-btn" onclick="copyAbsentReport('${clsObj.classNameKey}', '${originalScheduleText}')">Copy nhanh</button>
                         </div>
                         <ul class="absent-list" id="absentList-${safeId}">
                             ${renderAbsentRowsHtml(studentList)}
@@ -546,8 +568,8 @@ function addNewStudentToUI(classNameKey, safeId) {
     let match = findStudentDataMatch(classNameKey);
     if (!match) {
         let upper = classNameKey.toUpperCase();
-        masterStudentsDatabase[upper] = { sheet: "Thêm thủ công", schedule: "", students: [] };
-        match = { data: masterStudentsDatabase[upper] };
+        window.masterStudentsDatabase[upper] = { sheet: "Thêm thủ công", schedule: "", students: [] };
+        match = { data: window.masterStudentsDatabase[upper] };
     }
 
     const studentsList = match.data.students;
@@ -574,7 +596,7 @@ function renderFullSystemUIUpdate() {
         if (el.id) openedDomIds.push(el.id);
     });
 
-    renderSystemUIByDay();
+    window.renderSystemUIByDay();
 
     openedDomIds.forEach(id => {
         let target = document.getElementById(id);
@@ -607,8 +629,8 @@ function copyAbsentReport(classNameKey, titleText) {
 }
 
 async function saveDatabaseState() {
-    localStorage.setItem('master_students_db', JSON.stringify(masterStudentsDatabase));
-    localStorage.setItem('day_schedules_struct', JSON.stringify(daySchedulesStructure));
+    localStorage.setItem('master_students_db', JSON.stringify(window.masterStudentsDatabase));
+    localStorage.setItem('day_schedules_struct', JSON.stringify(window.daySchedulesStructure));
     await window.saveToFirebase();
 }
 
@@ -630,8 +652,8 @@ function searchGlobalStudent() {
     let matchCount = 0;
     let matchedKeys = new Set(); 
 
-    Object.keys(masterStudentsDatabase).forEach(classKey => {
-        masterStudentsDatabase[classKey].students.forEach(student => {
+    Object.keys(window.masterStudentsDatabase).forEach(classKey => {
+        window.masterStudentsDatabase[classKey].students.forEach(student => {
             if (student.name.toLowerCase().includes(keyword) || student.phone.toString().includes(keyword)) {
                 matchCount++;
                 matchedKeys.add(classKey); 
@@ -670,9 +692,9 @@ function handleSearchKeyPress(event) {
 function clearSystemCache() {
     if (confirm("Xóa toàn bộ dữ liệu lưu trữ?")) {
         localStorage.clear();
-        masterStudentsDatabase = {};
-        Object.keys(daySchedulesStructure).forEach(k => daySchedulesStructure[k].classes = []);
-        renderSystemUIByDay();
+        window.masterStudentsDatabase = {};
+        Object.keys(window.daySchedulesStructure).forEach(k => window.daySchedulesStructure[k].classes = []);
+        window.renderSystemUIByDay();
         document.getElementById('fileStatusMessage').innerText = "Chưa có dữ liệu học viên. Vui lòng chọn tệp Excel.";
     }
 }
@@ -697,8 +719,8 @@ const db = getFirestore(app);
 window.saveToFirebase = async function () {
     try {
         await setDoc(doc(db, "system", "database_v3_by_column"), {
-            database: masterStudentsDatabase,
-            structure: daySchedulesStructure,
+            database: window.masterStudentsDatabase,
+            structure: window.daySchedulesStructure,
             filename: localStorage.getItem("big_classes_filename") || "",
             updatedAt: new Date().toISOString()
         });
@@ -710,13 +732,15 @@ window.loadFromFirebase = async function () {
         const docSnap = await getDoc(doc(db, "system", "database_v3_by_column"));
         if (docSnap.exists()) {
             const data = docSnap.data();
-            masterStudentsDatabase = data.database || {};
-            daySchedulesStructure = data.structure || daySchedulesStructure;
+            window.masterStudentsDatabase = data.database || {};
+            window.daySchedulesStructure = data.structure || window.daySchedulesStructure;
             
-            localStorage.setItem("master_students_db", JSON.stringify(masterStudentsDatabase));
-            localStorage.setItem("day_schedules_struct", JSON.stringify(daySchedulesStructure));
+            localStorage.setItem("master_students_db", JSON.stringify(window.masterStudentsDatabase));
+            localStorage.setItem("day_schedules_struct", JSON.stringify(window.daySchedulesStructure));
             
-            renderSystemUIByDay();
+            if (typeof window.renderSystemUIByDay === "function") {
+                window.renderSystemUIByDay();
+            }
         }
     } catch (err) { 
         console.error("Lỗi đọc dữ liệu từ Firebase:", err); 
