@@ -266,7 +266,8 @@ function startProcessingExcel(input) {
                             if (!isExist && cleanClassName.length > 1) {
                                 window.daySchedulesStructure[dayKey].classes.push({
                                     classNameKey: cleanClassName,
-                                    rawText: fullScheduleText
+                                    rawText: fullScheduleText,
+                                    rowIndex: r // Ghi nhớ số dòng xuất hiện trong cột B từ trên xuống dưới
                                 });
                             }
                         }
@@ -404,7 +405,12 @@ window.renderSystemUIByDay = function() {
         const dayGroup = window.daySchedulesStructure[dayKey];
         if (!dayGroup || dayGroup.classes.length === 0) return; 
 
-        dayGroup.classes.sort((a, b) => a.rawText.localeCompare(b.rawText, "vi"));
+        // 📊 SẮP XẾP: Sắp xếp các lớp theo vị trí phòng học từ trên xuống dưới (rowIndex tăng dần)
+        dayGroup.classes.sort((a, b) => {
+            let rA = a.rowIndex !== undefined ? a.rowIndex : 9999;
+            let rB = b.rowIndex !== undefined ? b.rowIndex : 9999;
+            return rA - rB;
+        });
 
         const daySection = document.createElement("div");
         daySection.className = "group-block-wrapper";
@@ -427,9 +433,7 @@ window.renderSystemUIByDay = function() {
             let studentList = [];
             let originalScheduleText = clsObj.rawText; 
 
-            // CẮT BỎ TÊN LỚP MÀU TRẮNG: Tách các dòng dữ liệu
             let textLines = originalScheduleText.split("\n");
-            // Nếu dòng đầu tiên trùng tên lớp vàng thì loại bỏ dòng lặp đó đi
             if (textLines.length > 0 && textLines[0].trim().toUpperCase() === clsObj.classNameKey.toUpperCase()) {
                 textLines.shift();
             }
