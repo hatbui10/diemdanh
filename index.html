@@ -120,7 +120,7 @@
     <div class="btn-group-top">
         <label for="excelFileInput" class="custom-upload-btn">📂 Tải lên File Excel</label>
         <input type="file" id="excelFileInput" accept=".xlsx, .xls" style="display: none;" onchange="startProcessingExcel(this)">
-        <button class="btn-danger-top" onclick="clearSystemCache()"> XÓA dữ liệu CŨ</button>
+        <button class="btn-danger-top" onclick="clearSystemCache()" style="display: none;> XÓA dữ liệu CŨ</button>
     </div>
     <div id="fileStatusMessage" class="file-status">Chưa có dữ liệu học viên. Vui lòng chọn tệp Excel.</div>
 </div>
@@ -167,9 +167,28 @@ window.daySchedulesStructure = {
     "THU_7": { name: "Thứ Bảy", classes: [] },
     "CHU_NHAT": { name: "Chủ Nhật", classes: [] }
 };
+window.isUploadingExcel = false;
+window.tempBackupAttendanceMap = {};
 
 const targetDataSheets = ["SV", "12", "11", "10", "9", "8", "7", "6", "5", "4", "3", "2", "DH25", "DH26"];
 const hardcodedDayKeysOrder = ["THU_2", "THU_3", "THU_4", "THU_5", "THU_6", "THU_7", "CHU_NHAT"];
+
+function khongDauChuanHoa(str) {
+    if (!str) return "";
+    return str.toString().trim().toLowerCase()
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+        .replace(/đ/g, "d")
+        .replace(/[^a-z0-9]/g, ""); 
+}
+
+function chuanHoaSoDienThoai(phone) {
+    if (!phone) return "";
+    let clean = phone.toString().replace(/[^0-9]/g, '');
+    if (clean.startsWith('0')) {
+        clean = clean.substring(1);
+    }
+    return clean;
+}
 
 function displayPhone(p) { 
     if(!p || p === 'Chưa có' || p === 'undefined') return 'Chưa có';
@@ -178,7 +197,6 @@ function displayPhone(p) {
     return p; 
 }
 
-// Hàm dự phòng khi mất kết nối mạng
 function loadLocalCacheBackup() {
     const cachedDb = localStorage.getItem("master_students_db");
     const cachedStruct = localStorage.getItem("day_schedules_struct");
@@ -193,20 +211,29 @@ function startProcessingExcel(input) {
     const file = input.files[0];
     if (!file) return;
 
-    document.getElementById('fileStatusMessage').innerText = "Đang bóc tách riêng từng cột của Thứ trong Sheet L...";
+    window.isUploadingExcel = true;
+    document.getElementById('fileStatusMessage').innerText = "Đang trích xuất và bảo toàn lịch sử vắng mặt cũ...";
     document.getElementById('progressContainer').style.display = 'block';
     document.getElementById('progressBar').style.width = '10%';
 
-    // SAO LƯU TRẠNG THÁI HỌC SINH CŨ (Tên + SĐT để map)
-    const oldStudentsMemoryMap = {};
+    window.tempBackupAttendanceMap = {};
+    const manualAddedStudentsList = [];
+
     Object.keys(window.masterStudentsDatabase).forEach(classKey => {
         if (window.masterStudentsDatabase[classKey] && window.masterStudentsDatabase[classKey].students) {
             window.masterStudentsDatabase[classKey].students.forEach(std => {
-                let uniqueKey = `${std.name.trim().toLowerCase()}_${std.phone.toString().trim()}`;
-                oldStudentsMemoryMap[uniqueKey] = {
+                let matchKey = khongDauChuanHoa(std.name) + "_" + chuanHoaSoDienThoai(std.phone);
+                window.tempBackupAttendanceMap[matchKey] = {
                     status: std.status || "present",
                     note: std.note || ""
                 };
+
+                if (window.masterStudentsDatabase[classKey].sheet === "Thêm thủ công") {
+                    manualAddedStudentsList.push({
+                        targetClass: classKey,
+                        studentObj: std
+                    });
+                }
             });
         }
     });
@@ -223,6 +250,7 @@ function startProcessingExcel(input) {
             const sheetL = workbook.Sheets["L"];
             if (!sheetL) {
                 alert("Không tìm thấy Sheet 'L'!");
+                window.isUploadingExcel = false;
                 document.getElementById('progressContainer').style.display = 'none';
                 return;
             }
@@ -294,7 +322,7 @@ function startProcessingExcel(input) {
             }
 
             document.getElementById('progressBar').style.width = '40%';
-            document.getElementById('fileStatusMessage').innerText = "Đang nạp danh sách học sinh từ các Sheet khối...";
+            document.getElementById('fileStatusMessage').innerText = "Đang kiểm tra và ánh xạ thông tin học sinh từ file khối...";
 
             const sheetsToProcess = workbook.SheetNames.filter(name => targetDataSheets.includes(name.trim()));
             let totalSheets = sheetsToProcess.length;
@@ -302,8 +330,23 @@ function startProcessingExcel(input) {
 
             async function parseSheetStep() {
                 if (currentSheetIdx >= totalSheets) {
-                    document.getElementById('progressBar').style.width = '100%';
+                    document.getElementById('progressBar').style.width = '85%';
                     
+                    manualAddedStudentsList.forEach(item => {
+                        let targetClassUpper = item.targetClass.toUpperCase();
+                        if (!window.masterStudentsDatabase[targetClassUpper]) {
+                            window.masterStudentsDatabase[targetClassUpper] = {
+                                sheet: "Thêm thủ công",
+                                schedule: "",
+                                students: []
+                            };
+                        }
+                        let currentStds = window.masterStudentsDatabase[targetClassUpper].students;
+                        item.studentObj.id = currentStds.length + 1;
+                        currentStds.push(item.studentObj);
+                    });
+
+                    document.getElementById('progressBar').style.width = '100%';
                     localStorage.setItem('master_students_db', JSON.stringify(window.masterStudentsDatabase));
                     localStorage.setItem('day_schedules_struct', JSON.stringify(window.daySchedulesStructure));
                     localStorage.setItem('big_classes_filename', file.name);
@@ -311,9 +354,15 @@ function startProcessingExcel(input) {
                     await saveDatabaseState();
                     window.renderSystemUIByDay();
 
+                    setTimeout(() => { 
+                        window.isUploadingExcel = false; 
+                        document.getElementById('progressContainer').style.display = 'none';
+                        input.value = "";
+                    }, 1200);
+
                     let countTotal = 0;
                     Object.keys(window.masterStudentsDatabase).forEach(k => countTotal += window.masterStudentsDatabase[k].students.length);
-                    document.getElementById('fileStatusMessage').innerText = `✅ Đã phân tách thành công lịch trình theo từng cột!\nTập hợp được tổng số ${countTotal} học sinh từ các khối.`;
+                    document.getElementById('fileStatusMessage').innerText = `✅ Tải file hoàn tất!\nTìm thấy tổng cộng ${countTotal} học sinh trong các lớp khối.`;
                     return;
                 }
 
@@ -322,9 +371,9 @@ function startProcessingExcel(input) {
                 const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: false });
                 
                 if (rows.length > 0) {
-                    let detectedClassName = "";
+                    let currentClassScope = ""; 
                     let detectedSchedule = "";
-                    let previousText = "";
+                    let pendingClassNameStr = ""; 
                     let readingStudents = false;
 
                     rows.forEach((row) => {
@@ -340,15 +389,17 @@ function startProcessingExcel(input) {
                         const isSchedule = /^t[2-7]/i.test(cellB) || /^cn/i.test(cellB) || /18h|19h|20h/i.test(cellB) || cellB.includes("THỨ");
 
                         if (isSchedule) {
-                            if (previousText) detectedClassName = previousText;
+                            if (pendingClassNameStr) {
+                                currentClassScope = pendingClassNameStr; 
+                            }
                             detectedSchedule = cellB;
-                            readingStudents = true;
+                            readingStudents = true; 
                             return;
                         }
 
                         if (readingStudents) {
                             if (cellB && !/^\d+$/.test(cellB) && cleanPhone.length >= 9 && cleanPhone.length <= 11) {
-                                let classKeyUpper = (detectedClassName || "LỚP CHƯA ĐẶT TÊN").toUpperCase();
+                                let classKeyUpper = (currentClassScope || "LỚP CHƯA ĐẶT TÊN").toUpperCase();
                                 if (!window.masterStudentsDatabase[classKeyUpper]) {
                                     window.masterStudentsDatabase[classKeyUpper] = {
                                         sheet: sheetName,
@@ -357,36 +408,36 @@ function startProcessingExcel(input) {
                                     };
                                 }
 
-                                let uniqueMatchKey = `${cellB.trim().toLowerCase()}_${cleanPhone.trim()}`;
-                                let defaultStatus = "present";
-                                let defaultNote = "";
+                                let matchKey = khongDauChuanHoa(cellB) + "_" + chuanHoaSoDienThoai(cleanPhone);
+                                let restoredStatus = "present";
+                                let restoredNote = "";
 
-                                if (oldStudentsMemoryMap[uniqueMatchKey]) {
-                                    defaultStatus = oldStudentsMemoryMap[uniqueMatchKey].status;
-                                    defaultNote = oldStudentsMemoryMap[uniqueMatchKey].note;
+                                if (window.tempBackupAttendanceMap[matchKey]) {
+                                    restoredStatus = window.tempBackupAttendanceMap[matchKey].status; 
+                                    restoredNote = window.tempBackupAttendanceMap[matchKey].note;     
                                 }
 
                                 window.masterStudentsDatabase[classKeyUpper].students.push({
                                     id: window.masterStudentsDatabase[classKeyUpper].students.length + 1,
                                     name: cellB,
                                     phone: cleanPhone,
-                                    status: defaultStatus,  
-                                    note: defaultNote       
+                                    status: restoredStatus,  
+                                    note: restoredNote       
                                 });
                                 return;
                             }
+                            
                             if (cellB && cleanPhone.length < 9) {
-                                readingStudents = false;
-                                { previousText = cellB; return; }
+                                pendingClassNameStr = cellB;
                             }
                             return;
                         }
-                        if (cellB && cleanPhone.length < 9) previousText = cellB;
+                        if (cellB && cleanPhone.length < 9) pendingClassNameStr = cellB;
                     });
                 }
 
                 currentSheetIdx++;
-                let percent = Math.round((currentSheetIdx / totalSheets) * 60) + 40;
+                let percent = Math.round((currentSheetIdx / totalSheets) * 40) + 40;
                 document.getElementById('progressBar').style.width = percent + '%';
                 setTimeout(parseSheetStep, 15);
             }
@@ -394,14 +445,61 @@ function startProcessingExcel(input) {
 
         } catch (err) {
             console.error(err);
+            window.isUploadingExcel = false;
+            document.getElementById('progressContainer').style.display = 'none';
             alert("Lỗi cấu trúc tệp Excel!");
         }
     };
     reader.readAsArrayBuffer(file);
 }
 
+
+
+
+
+// ⚡ HÀM SO KHỚP CHUẨN HÓA MỚI: PHÂN LOẠI DỰA VÀO CHỮ ĐẦU TIÊN CỦA NHÓM LỚP "KID"
 function findStudentDataMatch(classNameKey) {
     let keys = Object.keys(window.masterStudentsDatabase);
+    let targetUpper = classNameKey.toUpperCase().trim();
+    
+    // Nếu trùng khớp chính xác 100% tên chuỗi thì nhận luôn
+    if (window.masterStudentsDatabase[targetUpper]) {
+        return { fullKey: targetUpper, data: window.masterStudentsDatabase[targetUpper] };
+    }
+
+    // 🌟 XỬ LÝ RIÊNG BIỆT CHO NHÓM LỚP CÓ CHỨA TỪ KHÓA KID
+    if (targetUpper.includes("KID")) {
+        // Chuẩn hóa chuỗi bằng cách thêm khoảng trắng quanh từ KID và loại bỏ ký tự đặc biệt
+        let cleanTarget = targetUpper.replace(/KID/g, " KID ").replace(/[^A-Z0-9]/g, " ");
+        let words = cleanTarget.split(/\s+/).filter(w => w.length > 0);
+        let firstWord = words[0] || ""; // Lấy chữ đầu tiên của tiêu đề lớp
+
+        // Trường hợp 1: Nếu chữ đầu tiên là SKY hoặc SMART -> Cho chạy tìm trùng chữ bình thường
+        if (firstWord.includes("SKY") || firstWord.includes("SMART")) {
+            for (let k of keys) {
+                let currentUpper = k.toUpperCase().trim();
+                let cleanCurrent = currentUpper.replace(/KID/g, " KID ").replace(/[^A-Z0-9]/g, " ");
+                let currentWords = cleanCurrent.split(/\s+/).filter(w => w.length > 0);
+                
+                // Nếu lớp đích cũng chứa từ khóa đầu tiên đó (SKY hoặc SMART) thì khớp luôn
+                if (currentWords.includes(firstWord)) {
+                    return { fullKey: k, data: window.masterStudentsDatabase[k] };
+                }
+            }
+        } 
+        // Trường hợp 2: Chỉ chứa KID đơn thuần hoặc mã khác -> Gán toàn bộ cho E7-KID / E7
+        else {
+            for (let k of keys) {
+                let currentUpper = k.toUpperCase().trim();
+                // Tìm đúng lớp trong database khối chứa ký tự đặc trưng của E7
+                if (currentUpper.includes("E7") && currentUpper.includes("KID")) {
+                    return { fullKey: k, data: window.masterStudentsDatabase[k] };
+                }
+            }
+        }
+    }
+
+    // 🌟 GIỮ NGUYÊN BẢN GỐC CỦA BẠN: Chạy cho toàn bộ tất cả các khối lớp thông thường khác
     let str1 = classNameKey.toUpperCase().replace(/[^A-Z0-9]/g, " ");
     let words1 = str1.split(/\s+/).filter(w => w.length > 1 && w !== "LỚP" && w !== "KHỐI");
 
@@ -417,10 +515,14 @@ function findStudentDataMatch(classNameKey) {
     return null;
 }
 
+
+
+
+
+
 window.renderSystemUIByDay = function() {
     const mainContainer = document.getElementById("dynamicMainContainer");
     
-    // Giữ trạng thái đóng mở của các thẻ accordion hiện tại để tránh bị giật màn hình khi đồng bộ thời gian thực
     const openedDomIds = [];
     document.querySelectorAll('.class-block-wrapper.active, .group-block-wrapper.active').forEach(el => {
         if (el.id) openedDomIds.push(el.id);
@@ -466,7 +568,6 @@ window.renderSystemUIByDay = function() {
 
             let roomText = clsObj.room ? "📍 Vị trí: " + clsObj.room : "📍 Vị trí: Chưa rõ";
 
-            // Mã hóa an toàn tiêu đề báo cáo để truyền vào hàm copy hành vi onclick mà không gây vỡ dòng lệnh
             let fullReportTitle = clsObj.classNameKey;
             if (clsObj.scheduleAndTeacher) fullReportTitle += " - " + clsObj.scheduleAndTeacher;
             fullReportTitle += " (" + roomText + ")";
@@ -499,10 +600,10 @@ window.renderSystemUIByDay = function() {
                     <h3>Danh Sách Thành Viên Lớp</h3>
                     <br>
                     
-                    <div class="add-student-box" style="display: none">
-                        <input type="text" id="inputName-${safeId}" placeholder="Họ và tên học viên..." hidden>
-                        <input type="tel" id="inputPhone-${safeId}" placeholder="Số điện thoại..." hidden>
-                        <button class="btn-add" onclick="addNewStudentToUI('${clsObj.classNameKey}', '${safeId}')" hidden>+ Thêm học sinh</button>
+                    <div class="add-student-box">
+                        <input type="text" id="inputName-${safeId}" placeholder="Họ và tên học viên...">
+                        <input type="tel" id="inputPhone-${safeId}" placeholder="Số điện thoại...">
+                        <button class="btn-add" onclick="addNewStudentToUI('${clsObj.classNameKey}', '${safeId}')">+ Thêm học sinh</button>
                     </div>
                     
                     <div class="absent-section">
@@ -521,7 +622,6 @@ window.renderSystemUIByDay = function() {
                 </div>
             `;
             
-            // Xử lý sự kiện click của nút copy trực tiếp qua DOM để không bị dính lỗi cú pháp ký tự xuống dòng
             classSection.querySelector(`#btnCopy-${safeId}`).onclick = function(e) {
                 e.stopPropagation();
                 copyAbsentReport(clsObj.classNameKey, fullReportTitle);
@@ -532,7 +632,6 @@ window.renderSystemUIByDay = function() {
         });
     });
 
-    // Khôi phục lại trạng thái đóng/mở thẻ trước đó
     openedDomIds.forEach(id => {
         let target = document.getElementById(id);
         if (target) target.classList.add('active');
@@ -638,6 +737,7 @@ function deleteStudent(classNameKey, studentId, safeId) {
     }
 }
 
+// Hàm gửi dữ liệu vắng mặt
 function copyAbsentReport(classNameKey, titleText) {
     let match = findStudentDataMatch(classNameKey);
     if (!match) return;
@@ -657,7 +757,6 @@ function copyAbsentReport(classNameKey, titleText) {
         });
     }
 
-    // Cơ chế copy an toàn tương thích mọi thiết bị di động
     if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(report).then(() => {
             alert('✅ Đã sao chép báo cáo vắng lớp ' + classNameKey);
@@ -749,11 +848,16 @@ function handleSearchKeyPress(event) {
 }
 
 function clearSystemCache() {
-    if (confirm("Xóa toàn bộ dữ liệu lưu trữ trên hệ thống đám mây đám mây?")) {
+    if (confirm("Xóa toàn bộ dữ liệu lưu trữ trên hệ thống đám mây?")) {
         localStorage.clear();
+        window.isUploadingExcel = false;
+        window.tempBackupAttendanceMap = {};
         window.masterStudentsDatabase = {};
         Object.keys(window.daySchedulesStructure).forEach(k => window.daySchedulesStructure[k].classes = []);
         window.renderSystemUIByDay();
+        document.getElementById('progressContainer').style.display = 'none';
+        document.getElementById('progressBar').style.width = '0%';
+        document.getElementById('excelFileInput').value = ""; 
         if (typeof window.saveToFirebase === "function") {
             window.saveToFirebase();
         }
@@ -762,7 +866,6 @@ function clearSystemCache() {
 }
 </script>
 
-<!-- MODULE PHỤ TRÁCH LIÊN KẾT DỮ LIỆU THỜI GIAN THỰC (REALTIME SYNC) -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
 import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
@@ -779,7 +882,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// Đẩy dữ liệu lên Firebase
 window.saveToFirebase = async function () {
     try {
         await setDoc(doc(db, "system", "database_v3_by_column"), {
@@ -791,8 +893,9 @@ window.saveToFirebase = async function () {
     } catch (err) { console.error("Lỗi đồng bộ dữ liệu lên Firebase: ", err); }
 }
 
-// ⚡ LẮNG NGHE THỜI GIAN THỰC (REALTIME LISTENER): Tự động phát hiện biến động dữ liệu trên máy khác sau 0.5s
 onSnapshot(doc(db, "system", "database_v3_by_column"), (docSnap) => {
+    if (window.isUploadingExcel) return;
+
     if (docSnap.exists()) {
         const data = docSnap.data();
         window.masterStudentsDatabase = data.database || {};
@@ -801,7 +904,6 @@ onSnapshot(doc(db, "system", "database_v3_by_column"), (docSnap) => {
         localStorage.setItem("master_students_db", JSON.stringify(window.masterStudentsDatabase));
         localStorage.setItem("day_schedules_struct", JSON.stringify(window.daySchedulesStructure));
         
-        // Cập nhật lại giao diện ngay tức thì
         window.renderSystemUIByDay();
         
         let countTotal = 0;
