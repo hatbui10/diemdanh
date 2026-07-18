@@ -66,11 +66,8 @@
         .class-accordion-header::after { content: '▼'; position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: #ffd700; font-size: 0.75rem; }
         .class-block-wrapper.active .class-accordion-header::after { content: '▲'; color: #00ff66; }
         
-        /* Tiêu đề lớp màu vàng đứng cùng dòng với giáo viên/lịch học */
         .class-header-row { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px; margin-bottom: 4px; padding-right: 20px; }
         .class-main-title { color: #ffd700; text-shadow: 0 0 10px rgba(255, 215, 0, 0.3); font-size: 1.05rem; text-transform: uppercase; font-weight: bold; }
-        
-        /* Màu xanh da trời cho giáo viên và giờ học */
         .class-extra-inline { color: #00f0ff; text-shadow: 0 0 8px rgba(0, 240, 255, 0.3); font-size: 0.9rem; font-weight: 500; }
         
         .class-schedule { color: #fff; font-size: 0.85rem; opacity: 0.95; margin-bottom: 3px; line-height: 1.4; }
@@ -210,6 +207,20 @@ function startProcessingExcel(input) {
     document.getElementById('fileStatusMessage').innerText = "Đang bóc tách riêng từng cột của Thứ trong Sheet L...";
     document.getElementById('progressContainer').style.display = 'block';
     document.getElementById('progressBar').style.width = '10%';
+
+    // ⚡ BƯỚC 1: TRÍCH XUẤT SAO LƯU TRẠNG THÁI ĐIỂM DANH CŨ (Tên + SĐT để map)
+    const oldStudentsMemoryMap = {};
+    Object.keys(window.masterStudentsDatabase).forEach(classKey => {
+        if (window.masterStudentsDatabase[classKey] && window.masterStudentsDatabase[classKey].students) {
+            window.masterStudentsDatabase[classKey].students.forEach(std => {
+                let uniqueKey = `${std.name.trim().toLowerCase()}_${std.phone.toString().trim()}`;
+                oldStudentsMemoryMap[uniqueKey] = {
+                    status: std.status || "present",
+                    note: std.note || ""
+                };
+            });
+        }
+    });
 
     window.masterStudentsDatabase = {};
     Object.keys(window.daySchedulesStructure).forEach(k => window.daySchedulesStructure[k].classes = []);
@@ -357,12 +368,22 @@ function startProcessingExcel(input) {
                                     };
                                 }
 
+                                // ⚡ BƯỚC 2: SO SÁNH & KHÔI PHỤC TRẠNG THÁI KHI TRÙNG KHỚP TÊN + SĐT
+                                let uniqueMatchKey = `${cellB.trim().toLowerCase()}_${cleanPhone.trim()}`;
+                                let defaultStatus = "present";
+                                let defaultNote = "";
+
+                                if (oldStudentsMemoryMap[uniqueMatchKey]) {
+                                    defaultStatus = oldStudentsMemoryMap[uniqueMatchKey].status;
+                                    defaultNote = oldStudentsMemoryMap[uniqueMatchKey].note;
+                                }
+
                                 window.masterStudentsDatabase[classKeyUpper].students.push({
                                     id: window.masterStudentsDatabase[classKeyUpper].students.length + 1,
                                     name: cellB,
                                     phone: cleanPhone,
-                                    status: "present",
-                                    note: ""
+                                    status: defaultStatus,  // Khôi phục trạng thái cũ
+                                    note: defaultNote       // Khôi phục ghi chú cũ
                                 });
                                 return;
                             }
@@ -422,7 +443,6 @@ window.renderSystemUIByDay = function() {
         const dayGroup = window.daySchedulesStructure[dayKey];
         if (!dayGroup || dayGroup.classes.length === 0) return; 
 
-        // Sắp xếp lớp học theo vị trí phòng học từ trên xuống dưới
         dayGroup.classes.sort((a, b) => {
             let rA = a.rowIndex !== undefined ? a.rowIndex : 9999;
             let rB = b.rowIndex !== undefined ? b.rowIndex : 9999;
@@ -449,10 +469,8 @@ window.renderSystemUIByDay = function() {
             const studentMatch = findStudentDataMatch(clsObj.classNameKey);
             let studentList = [];
 
-            // Thiết lập vị trí phòng học ở dòng riêng bên dưới
             let roomText = clsObj.room ? "📍 Vị trí: " + clsObj.room : "📍 Vị trí: Chưa rõ";
 
-            // Tạo chuỗi hoàn chỉnh dùng cho tính năng copy báo cáo vắng mặt
             let fullReportTitle = clsObj.classNameKey;
             if (clsObj.scheduleAndTeacher) fullReportTitle += " - " + clsObj.scheduleAndTeacher;
             fullReportTitle += "\n" + roomText;
@@ -471,7 +489,6 @@ window.renderSystemUIByDay = function() {
             classSection.setAttribute("id", `class-wrapper-${safeId}`);
             classSection.setAttribute("data-classname-box", clsObj.classNameKey);
 
-            // GIAO DIỆN MỚI: Tên lớp vàng đứng cùng dòng với extra thông tin giáo viên tô màu xanh da trời
             classSection.innerHTML = `
                 <div class="class-accordion-header" onclick="toggleAccordion(this)">
                     <div class="class-header-row">
