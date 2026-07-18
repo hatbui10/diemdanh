@@ -120,7 +120,7 @@
     <div class="btn-group-top">
         <label for="excelFileInput" class="custom-upload-btn">📂 Tải lên File Excel</label>
         <input type="file" id="excelFileInput" accept=".xlsx, .xls" style="display: none;" onchange="startProcessingExcel(this)">
-        <button class="btn-danger-top" onclick="clearSystemCache()" style="display: none;> XÓA dữ liệu CŨ</button>
+        <button class="btn-danger-top" onclick="clearSystemCache()"> XÓA dữ liệu CŨ</button>
     </div>
     <div id="fileStatusMessage" class="file-status">Chưa có dữ liệu học viên. Vui lòng chọn tệp Excel.</div>
 </div>
@@ -366,75 +366,88 @@ function startProcessingExcel(input) {
                     return;
                 }
 
+
+
+
+
+
                 const sheetName = sheetsToProcess[currentSheetIdx];
-                const sheet = workbook.Sheets[sheetName];
-                const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: false });
-                
-                if (rows.length > 0) {
-                    let currentClassScope = ""; 
-                    let detectedSchedule = "";
-                    let pendingClassNameStr = ""; 
-                    let readingStudents = false;
+    const sheet = workbook.Sheets[sheetName];
+    const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: false });
+    
+    if (rows.length > 0) {
+        let currentClassScope = ""; 
+        let detectedSchedule = "";
+        let pendingClassNameStr = ""; 
+        let readingStudents = false;
+        let emptyRowCount = 0; // Bộ đếm dòng trống
 
-                    rows.forEach((row) => {
-                        if (!row) return;
-                        let cellB = row[1] ? row[1].toString().trim() : "";
-                        let cellP = row[16] ? row[16].toString().trim() : "";
-                        let cellB_lower = cellB.toLowerCase();
-                        let cleanPhone = cellP.replace(/[^0-9]/g, "");
-                        if (cleanPhone.length === 9 && !cleanPhone.startsWith("0")) cleanPhone = "0" + cleanPhone;
-
-                        if (cellB === "" || cellB_lower === "tên học sinh" || cellB_lower === "tên hs" || cellB_lower === "họ và tên" || cellB_lower === "tt") return;
-
-                        const isSchedule = /^t[2-7]/i.test(cellB) || /^cn/i.test(cellB) || /18h|19h|20h/i.test(cellB) || cellB.includes("THỨ");
-
-                        if (isSchedule) {
-                            if (pendingClassNameStr) {
-                                currentClassScope = pendingClassNameStr; 
-                            }
-                            detectedSchedule = cellB;
-                            readingStudents = true; 
-                            return;
-                        }
-
-                        if (readingStudents) {
-                            if (cellB && !/^\d+$/.test(cellB) && cleanPhone.length >= 9 && cleanPhone.length <= 11) {
-                                let classKeyUpper = (currentClassScope || "LỚP CHƯA ĐẶT TÊN").toUpperCase();
-                                if (!window.masterStudentsDatabase[classKeyUpper]) {
-                                    window.masterStudentsDatabase[classKeyUpper] = {
-                                        sheet: sheetName,
-                                        schedule: detectedSchedule,
-                                        students: []
-                                    };
-                                }
-
-                                let matchKey = khongDauChuanHoa(cellB) + "_" + chuanHoaSoDienThoai(cleanPhone);
-                                let restoredStatus = "present";
-                                let restoredNote = "";
-
-                                if (window.tempBackupAttendanceMap[matchKey]) {
-                                    restoredStatus = window.tempBackupAttendanceMap[matchKey].status; 
-                                    restoredNote = window.tempBackupAttendanceMap[matchKey].note;     
-                                }
-
-                                window.masterStudentsDatabase[classKeyUpper].students.push({
-                                    id: window.masterStudentsDatabase[classKeyUpper].students.length + 1,
-                                    name: cellB,
-                                    phone: cleanPhone,
-                                    status: restoredStatus,  
-                                    note: restoredNote       
-                                });
-                                return;
-                            }
-                            
-                            if (cellB && cleanPhone.length < 9) {
-                                pendingClassNameStr = cellB;
-                            }
-                            return;
-                        }
-                        if (cellB && cleanPhone.length < 9) pendingClassNameStr = cellB;
-                    });
+        rows.forEach((row) => {
+            // Kiểm tra dòng trống hoặc dòng rác
+            if (!row || row.length === 0 || !row[1]) {
+                if (readingStudents) {
+                    emptyRowCount++;
                 }
+                if (emptyRowCount >= 3) {
+                    readingStudents = false; // Ngắt khi gặp 3 dòng trống liên tiếp
+                }
+                return;
+            }
+            
+            let cellB = row[1] ? row[1].toString().trim() : "";
+            let cellP = row[16] ? row[16].toString().trim() : "";
+            let cleanPhone = cellP.replace(/[^0-9]/g, "");
+            if (cleanPhone.length === 9 && !cleanPhone.startsWith("0")) cleanPhone = "0" + cleanPhone;
+
+            // Nếu dòng có nội dung, reset bộ đếm dòng trống
+            emptyRowCount = 0;
+
+            if (cellB.toLowerCase() === "tên học sinh" || cellB.toLowerCase() === "tên hs" || cellB.toLowerCase() === "họ và tên" || cellB.toLowerCase() === "tt") return;
+
+            const isSchedule = /^t[2-7]/i.test(cellB) || /^cn/i.test(cellB) || /18h|19h|20h/i.test(cellB) || cellB.includes("THỨ");
+
+            if (isSchedule) {
+                if (pendingClassNameStr) currentClassScope = pendingClassNameStr;
+                detectedSchedule = cellB;
+                readingStudents = true; 
+                return;
+            }
+
+            if (readingStudents) {
+                // Chỉ xử lý nếu là dòng học sinh (có SĐT)
+                if (cleanPhone.length >= 9 && cleanPhone.length <= 11) {
+                    let classKeyUpper = (currentClassScope || "LỚP CHƯA ĐẶT TÊN").toUpperCase();
+                    if (!window.masterStudentsDatabase[classKeyUpper]) {
+                        window.masterStudentsDatabase[classKeyUpper] = { sheet: sheetName, schedule: detectedSchedule, students: [] };
+                    }
+
+                    // TÌM VÀ BẢO TOÀN TRẠNG THÁI CŨ
+                    let matchKey = khongDauChuanHoa(cellB) + "_" + chuanHoaSoDienThoai(cleanPhone);
+                    let restored = window.tempBackupAttendanceMap[matchKey] || { status: "present", note: "" };
+
+                    window.masterStudentsDatabase[classKeyUpper].students.push({
+                        id: window.masterStudentsDatabase[classKeyUpper].students.length + 1,
+                        name: cellB,
+                        phone: cleanPhone,
+                        status: restored.status,  // Ưu tiên trạng thái đã backup
+                        note: restored.note       // Ưu tiên ghi chú đã backup
+                    });
+                    return;
+                }
+                // Nếu không có SĐT nhưng có dữ liệu, có thể là tên lớp
+                if (cellB && cleanPhone.length < 9) pendingClassNameStr = cellB;
+            } else if (cellB && cleanPhone.length < 9) {
+                pendingClassNameStr = cellB;
+            }
+        });
+    }
+
+
+
+
+
+
+
 
                 currentSheetIdx++;
                 let percent = Math.round((currentSheetIdx / totalSheets) * 40) + 40;
@@ -457,41 +470,37 @@ function startProcessingExcel(input) {
 
 
 
-// ⚡ HÀM SO KHỚP CHUẨN HÓA MỚI: PHÂN LOẠI DỰA VÀO CHỮ ĐẦU TIÊN CỦA NHÓM LỚP "KID"
+
+
+
+
+// ⚡ HÀM SO KHỚP THEO CHỮ ĐẦU TIÊN CỦA NHÓM LỚP "KID" (SKY KID / SMARTKID / E7)
 function findStudentDataMatch(classNameKey) {
     let keys = Object.keys(window.masterStudentsDatabase);
     let targetUpper = classNameKey.toUpperCase().trim();
     
-    // Nếu trùng khớp chính xác 100% tên chuỗi thì nhận luôn
     if (window.masterStudentsDatabase[targetUpper]) {
         return { fullKey: targetUpper, data: window.masterStudentsDatabase[targetUpper] };
     }
 
-    // 🌟 XỬ LÝ RIÊNG BIỆT CHO NHÓM LỚP CÓ CHỨA TỪ KHÓA KID
     if (targetUpper.includes("KID")) {
-        // Chuẩn hóa chuỗi bằng cách thêm khoảng trắng quanh từ KID và loại bỏ ký tự đặc biệt
         let cleanTarget = targetUpper.replace(/KID/g, " KID ").replace(/[^A-Z0-9]/g, " ");
         let words = cleanTarget.split(/\s+/).filter(w => w.length > 0);
-        let firstWord = words[0] || ""; // Lấy chữ đầu tiên của tiêu đề lớp
+        let firstWord = words[0] || ""; 
 
-        // Trường hợp 1: Nếu chữ đầu tiên là SKY hoặc SMART -> Cho chạy tìm trùng chữ bình thường
         if (firstWord.includes("SKY") || firstWord.includes("SMART")) {
             for (let k of keys) {
                 let currentUpper = k.toUpperCase().trim();
                 let cleanCurrent = currentUpper.replace(/KID/g, " KID ").replace(/[^A-Z0-9]/g, " ");
                 let currentWords = cleanCurrent.split(/\s+/).filter(w => w.length > 0);
                 
-                // Nếu lớp đích cũng chứa từ khóa đầu tiên đó (SKY hoặc SMART) thì khớp luôn
                 if (currentWords.includes(firstWord)) {
                     return { fullKey: k, data: window.masterStudentsDatabase[k] };
                 }
             }
-        } 
-        // Trường hợp 2: Chỉ chứa KID đơn thuần hoặc mã khác -> Gán toàn bộ cho E7-KID / E7
-        else {
+        } else {
             for (let k of keys) {
                 let currentUpper = k.toUpperCase().trim();
-                // Tìm đúng lớp trong database khối chứa ký tự đặc trưng của E7
                 if (currentUpper.includes("E7") && currentUpper.includes("KID")) {
                     return { fullKey: k, data: window.masterStudentsDatabase[k] };
                 }
@@ -499,7 +508,6 @@ function findStudentDataMatch(classNameKey) {
         }
     }
 
-    // 🌟 GIỮ NGUYÊN BẢN GỐC CỦA BẠN: Chạy cho toàn bộ tất cả các khối lớp thông thường khác
     let str1 = classNameKey.toUpperCase().replace(/[^A-Z0-9]/g, " ");
     let words1 = str1.split(/\s+/).filter(w => w.length > 1 && w !== "LỚP" && w !== "KHỐI");
 
@@ -514,6 +522,10 @@ function findStudentDataMatch(classNameKey) {
     }
     return null;
 }
+
+
+
+
 
 
 
@@ -737,7 +749,6 @@ function deleteStudent(classNameKey, studentId, safeId) {
     }
 }
 
-// Hàm gửi dữ liệu vắng mặt
 function copyAbsentReport(classNameKey, titleText) {
     let match = findStudentDataMatch(classNameKey);
     if (!match) return;
