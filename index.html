@@ -14,7 +14,7 @@
         h2 { text-align: center; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 15px; color: #00f0ff; text-shadow: 0 0 10px rgba(0, 240, 255, 0.5); font-size: 1.4rem; }
         h3 { color: #ff007f; text-shadow: 0 0 10px rgba(255, 0, 127, 0.5); font-size: 1.1rem; text-align: center; text-transform: uppercase; letter-spacing: 1px; }
         
-        /* 🛡️ THANH CHỌN QUYỀN (GIÁO VIÊN / TRỢ GIẢNG) */
+        /* 🛡️ THANH CHỌN QUYỀN */
         .role-selector-bar { background: #0d0d1a; border: 1px solid #00f0ff; border-radius: 6px; padding: 10px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 0 10px rgba(0, 240, 255, 0.1); }
         .role-selector-bar label { font-size: 0.9rem; font-weight: bold; color: #00f0ff; text-transform: uppercase; }
         .role-select { background: #050508; color: #ffd700; border: 1px solid #ffd700; padding: 6px 12px; font-size: 0.9rem; font-weight: bold; border-radius: 4px; outline: none; cursor: pointer; }
@@ -43,13 +43,13 @@
         .progress-container { width: 100%; background-color: #050508; border: 1px solid #333; border-radius: 4px; margin: 10px 0; display: none; overflow: hidden; }
         .progress-bar { width: 0%; height: 16px; background-color: #00ff66; text-align: center; line-height: 16px; color: #000; font-weight: bold; font-size: 0.75rem; transition: width 0.1s ease; box-shadow: 0 0 10px #00ff66; }
 
-        /* 🔍 KHU VỰC TÌM KIẾM HỌC VIÊN CHUNG */
+        /* 🔍 KHU VỰC TÌM KIẾM */
         .search-box { display: block; background: #0d0d1a; border: 1px solid #333; border-radius: 4px; padding: 10px; margin-bottom: 15px; text-align: center; }
         .search-input { width: 73%; background: #050508; border: 1px solid #333; color: #fff; padding: 10px; font-size: 0.9rem; border-radius: 4px; outline: none; margin-right: 2%; display: inline-block; vertical-align: middle; }
         .search-input:focus { border-color: #ffd700; }
         .search-btn { width: 23%; background: #ffd700; color: #000; border: none; padding: 11px 0; font-weight: bold; font-size: 0.85rem; border-radius: 4px; cursor: pointer; text-transform: uppercase; display: inline-block; vertical-align: middle; }
 
-        /* 📊 KẾT QUẢ TÌM KIẾM TRÊN BẢNG */
+        /* 📊 KẾT QUẢ TÌM KIẾM */
         .search-result-panel { background: #1a0813; border: 1px dashed #ff007f; border-radius: 4px; padding: 12px 8px; margin-bottom: 15px; display: none; }
         .result-title { color: #ff007f; font-weight: bold; font-size: 0.9rem; margin-bottom: 8px; display: flex; justify-content: space-between; }
         .result-table { width: 100%; border-collapse: collapse; }
@@ -68,7 +68,7 @@
         .group-panel { padding: 12px 6px; display: none; background: #06060c; }
         .group-block-wrapper.active .group-panel { display: block; }
 
-        /* 🏫 KHỐI GIAO DIỆN CHÍNH & ACCORDION LỚP CON */
+        /* 🏫 KHỐI LỚP */
         .class-block-wrapper { margin-bottom: 12px; background: #0a0a14; border: 1px solid #333; border-radius: 6px; overflow: hidden; }
         .class-accordion-header { padding: 12px 10px; background: #0d0d1f; cursor: pointer; user-select: none; transition: background 0.2s; position: relative; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
         .class-accordion-header:active { background: #151530; }
@@ -118,16 +118,28 @@
         
         .empty-alert { text-align: center; padding: 40px 10px; color: #555; font-style: italic; font-size: 0.95rem; }
 
-        /* 🛡️ QUY TẮC HIỂN THỊ THEO ROLE & TRẠNG THÁI HỌC SINH */
+        /* 🛡️ QUY TẮC PHÂN QUYỀN HIỂN THỊ (GUEST / TEACHER / ASSISTANT) */
         
-        /* 1. Nếu ở chế độ Giáo Viên: Mặc định ẩn nút gọi của tất cả học sinh */
+        /* 1. Nếu ở chế độ Khách (guest): Ẩn hoàn toàn các công cụ chỉnh sửa, nút tải file, thêm/xóa học viên, nút điểm danh và nút gọi điện */
+        body.role-guest .upload-card,
+        body.role-guest .add-student-box,
+        body.role-guest .copy-btn,
+        body.role-guest .btn-delete,
+        body.role-guest .student-controls-row,
+        body.role-guest .btn-call,
+        body.role-guest .th-call-col,
+        body.role-guest .td-call-col {
+            display: none !important;
+        }
+
+        /* 2. Nếu ở chế độ Giáo Viên: Ẩn nút gọi điện */
         body.role-teacher .btn-call,
         body.role-teacher .th-call-col,
         body.role-teacher .td-call-col {
             display: none !important;
         }
 
-        /* 2. Nếu ở chế độ Trợ Giảng: Mặc định ẩn tất cả nút gọi, TRỪ KHI học sinh đó vắng (status-absent) */
+        /* 3. Nếu ở chế độ Trợ Giảng: Ẩn nút gọi, TRỪ KHI học sinh đó vắng (status-absent) */
         body.role-assistant .btn-call {
             display: none !important;
         }
@@ -140,7 +152,7 @@
         }
     </style>
 </head>
-<body class="role-teacher">
+<body class="role-guest">
 
 <h2>HỆ THỐNG QUẢN LÝ ĐIỂM DANH ĐỘNG</h2>
 
@@ -148,7 +160,8 @@
 <div class="role-selector-bar">
     <label for="roleSelect">Chế độ hiển thị:</label>
     <select id="roleSelect" class="role-select" onchange="handleRoleChange(this)">
-        <option value="teacher" selected>Giáo Viên</option>
+        <option value="guest" selected>Khách (Chỉ xem)</option>
+        <option value="teacher">Giáo Viên (Yêu cầu mật khẩu)</option>
         <option value="assistant">Trợ Giảng (Yêu cầu mật khẩu)</option>
     </select>
 </div>
@@ -197,41 +210,63 @@
 const targetSheets = ["SV", "12", "11", "10", "9", "8", "7", "6", "5", "4", "3", "2", "DH25", "DH26"];
 let bigClassesDatabase = {};
 
-// MẬT KHẨU TRỢ GIẢNG
+// MẬT KHẨU PHÂN QUYỀN
+const TEACHER_PASSWORD = "123456"; 
 const ASSISTANT_PASSWORD = "123456"; 
 
 // HÀM XỬ LÝ KHI CHUYỂN CHẾ ĐỘ
 function handleRoleChange(selectElement) {
     const selectedValue = selectElement.value;
     const bodyTag = document.body;
+    const previousRole = bodyTag.classList.contains('role-teacher') ? 'teacher' : (bodyTag.classList.contains('role-assistant') ? 'assistant' : 'guest');
 
-    if (selectedValue === 'assistant') {
-        let passwordInput = prompt("Nhập mật khẩu để chuyển sang chế độ Trợ Giảng:");
-        if (passwordInput === ASSISTANT_PASSWORD) {
-            bodyTag.classList.remove('role-teacher');
-            bodyTag.classList.add('role-assistant');
-            localStorage.setItem('user_system_role', 'assistant');
-            alert("Đã chuyển sang chế độ Trợ Giảng thành công!");
-        } else {
-            alert("Sai mật khẩu! Giữ nguyên chế độ Giáo Viên.");
-            selectElement.value = 'teacher';
-            bodyTag.classList.remove('role-assistant');
+    if (selectedValue === 'guest') {
+        bodyTag.classList.remove('role-teacher', 'role-assistant');
+        bodyTag.classList.add('role-guest');
+        localStorage.setItem('user_system_role', 'guest');
+        alert("Đã chuyển về Chế độ Khách (chỉ xem).");
+    } else if (selectedValue === 'teacher') {
+        let passwordInput = prompt("Nhập mật khẩu để chuyển sang chế độ Giáo Viên:");
+        if (passwordInput === TEACHER_PASSWORD) {
+            bodyTag.classList.remove('role-guest', 'role-assistant');
             bodyTag.classList.add('role-teacher');
             localStorage.setItem('user_system_role', 'teacher');
+            alert("Đã mở khóa chế độ Giáo Viên thành công!");
+        } else {
+            alert("Sai mật khẩu! Giữ nguyên chế độ hiện tại.");
+            selectElement.value = previousRole;
         }
-    } else {
-        bodyTag.classList.remove('role-assistant');
-        bodyTag.classList.add('role-teacher');
-        localStorage.setItem('user_system_role', 'teacher');
+    } else if (selectedValue === 'assistant') {
+        let passwordInput = prompt("Nhập mật khẩu để chuyển sang chế độ Trợ Giảng:");
+        if (passwordInput === ASSISTANT_PASSWORD) {
+            bodyTag.classList.remove('role-guest', 'role-teacher');
+            bodyTag.classList.add('role-assistant');
+            localStorage.setItem('user_system_role', 'assistant');
+            alert("Đã mở khóa chế độ Trợ Giảng thành công!");
+        } else {
+            alert("Sai mật khẩu! Giữ nguyên chế độ hiện tại.");
+            selectElement.value = previousRole;
+        }
     }
 }
 
-// Mặc định luôn khởi động ở chế độ Giáo Viên
+// Khởi động mặc định là Chế độ Khách
 window.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('roleSelect').value = 'teacher';
-    document.body.classList.remove('role-assistant');
-    document.body.classList.add('role-teacher');
-    localStorage.setItem('user_system_role', 'teacher');
+    const savedRole = localStorage.getItem('user_system_role') || 'guest';
+    const selectElem = document.getElementById('roleSelect');
+    
+    // Nếu lần đầu hoặc lưu là guest thì ép về guest
+    if (savedRole === 'guest') {
+        selectElem.value = 'guest';
+        document.body.classList.remove('role-teacher', 'role-assistant');
+        document.body.classList.add('role-guest');
+    } else {
+        // Nếu trước đó đã nhập đúng, có thể yêu cầu nhập lại hoặc giữ nguyên tuỳ ý, ở đây mặc định an toàn là về guest nếu chưa xác thực lại, hoặc giữ nếu bạn muốn tiện lợi. Để bảo mật đúng yêu cầu "mặc định là xem chế độ khách", ta set về guest:
+        selectElem.value = 'guest';
+        document.body.classList.remove('role-teacher', 'role-assistant');
+        document.body.classList.add('role-guest');
+        localStorage.setItem('user_system_role', 'guest');
+    }
 });
 
 function displayPhone(p) { 
