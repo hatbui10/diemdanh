@@ -118,11 +118,25 @@
         
         .empty-alert { text-align: center; padding: 40px 10px; color: #555; font-style: italic; font-size: 0.95rem; }
 
-        /* ẨN NÚT GỌI NẾU Ở GIAO DIỆN GIÁO VIÊN */
+        /* 🛡️ QUY TẮC HIỂN THỊ THEO ROLE & TRẠNG THÁI HỌC SINH */
+        
+        /* 1. Nếu ở chế độ Giáo Viên: Mặc định ẩn nút gọi của tất cả học sinh */
         body.role-teacher .btn-call,
         body.role-teacher .th-call-col,
         body.role-teacher .td-call-col {
             display: none !important;
+        }
+
+        /* 2. Nếu ở chế độ Trợ Giảng: Mặc định ẩn tất cả nút gọi, TRỪ KHI học sinh đó vắng (status-absent) */
+        body.role-assistant .btn-call {
+            display: none !important;
+        }
+        body.role-assistant .student-card.status-absent .btn-call {
+            display: inline-block !important;
+        }
+        body.role-assistant .th-call-col,
+        body.role-assistant .td-call-col {
+            display: table-cell !important;
         }
     </style>
 </head>
@@ -134,7 +148,7 @@
 <div class="role-selector-bar">
     <label for="roleSelect">Chế độ hiển thị:</label>
     <select id="roleSelect" class="role-select" onchange="handleRoleChange(this)">
-        <option value="teacher" selected>Giáo Viên (Ẩn nút gọi)</option>
+        <option value="teacher" selected>Giáo Viên</option>
         <option value="assistant">Trợ Giảng (Yêu cầu mật khẩu)</option>
     </select>
 </div>
@@ -176,14 +190,14 @@
 </div>
 
 <div id="dynamicMainContainer">
-    <div class="empty-alert">Danh sách trống. Hệ thống sẽ tự động vẽ giao diện HTML 1 sau khi bạn nạp file Excel thành công!</div>
+    <div class="empty-alert">Danh sách trống. Hệ thống sẽ tự động vẽ giao diện HTML sau khi bạn nạp file Excel thành công!</div>
 </div>
 
 <script>
 const targetSheets = ["SV", "12", "11", "10", "9", "8", "7", "6", "5", "4", "3", "2", "DH25", "DH26"];
 let bigClassesDatabase = {};
 
-// MẬT KHẨU TRỢ GIẢNG (Bạn có thể đổi chuỗi '123456' thành mật khẩu bạn muốn)
+// MẬT KHẨU TRỢ GIẢNG
 const ASSISTANT_PASSWORD = "123456"; 
 
 // HÀM XỬ LÝ KHI CHUYỂN CHẾ ĐỘ
@@ -261,7 +275,7 @@ function startProcessingExcel(input) {
             
             const sheetsToProcess = workbook.SheetNames.filter(name => targetSheets.includes(name.trim()));
             if (sheetsToProcess.length === 0) {
-                alert("Không tìm thấy các sheet mục tiêu (SV, 12, 11... DH26) trong file Excel của bạn!");
+                alert("Không tìm thấy các sheet mục tiêu trong file Excel của bạn!");
                 progressContainer.style.display = 'none';
                 return;
             }
@@ -279,7 +293,7 @@ function startProcessingExcel(input) {
                         totalStudentsCount += bigClassesDatabase[classKey].students.length;
                     });
                     document.getElementById('fileStatusMessage').style.color = "#00ff66";
-                    document.getElementById('fileStatusMessage').innerText = `✅ Nạp thành công! Tìm thấy tổng cộng ${totalStudentsCount} học viên.\nĐã vẽ xong Form Quản Lý cho tất cả các lớp.`;
+                    document.getElementById('fileStatusMessage').innerText = `✅ Nạp thành công! Tìm thấy tổng cộng ${totalStudentsCount} học viên.`;
                     
                     localStorage.setItem('big_classes_database', JSON.stringify(bigClassesDatabase));
                     localStorage.setItem('big_classes_filename', file.name);
@@ -408,7 +422,7 @@ function renderFullSystemUI() {
 
     const classKeys = Object.keys(bigClassesDatabase);
     if (classKeys.length === 0) {
-        mainContainer.innerHTML = '<div class="empty-alert">Danh sách trống. Hệ thống sẽ tự động vẽ giao diện HTML 1 sau khi bạn nạp file Excel thành công!</div>';
+        mainContainer.innerHTML = '<div class="empty-alert">Danh sách trống. Vui lòng nạp file Excel!</div>';
         return;
     }
 
@@ -518,9 +532,10 @@ function renderStudentCardsHtml(classKey, students) {
         const absentActive = student.status === 'absent' ? 'active' : '';
         const presentActive = student.status === 'present' ? 'active' : '';
         const cardId = `card-${classKey.replace(/\s+/g, '-')}-${student.id}`;
+        const statusClass = `status-${student.status}`;
 
         return `
-            <div class="student-card status-${student.status}" id="${cardId}">
+            <div class="student-card ${statusClass}" id="${cardId}">
                 <div class="student-info-row">
                     <div class="student-meta">
                         <span class="student-name">${idx + 1}. ${student.name}</span>
