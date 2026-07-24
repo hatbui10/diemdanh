@@ -872,51 +872,6 @@ function toggleNewStudentBlink(buttonElement, classKey) {
 
 </script>
 
-<script type="module">
 
-
-window.saveToFirebase = async function () {
-    try {
-        await setDoc(
-            doc(db, "system", "database"),
-            {
-                database: bigClassesDatabase,
-                filename: localStorage.getItem("big_classes_filename") || "",
-                updatedAt: new Date().toISOString()
-            }
-        );
-        console.log("Đã lưu Firebase");
-    } catch (err) {
-        console.error("Lỗi lưu Firebase:", err);
-    }
-}
-
-window.loadFromFirebase = async function () {
-    try {
-        const docRef = doc(db, "system", "database");
-        const docSnap = await getDoc(docRef);
-
-        if (docSnap.exists()) {
-            const data = docSnap.data();
-            bigClassesDatabase = data.database || {};
-			localStorage.setItem("big_classes_database", JSON.stringify(bigClassesDatabase));
-            if (data.filename) {
-                localStorage.setItem("big_classes_filename", data.filename);
-            }
-            renderFullSystemUI();
-            console.log("Đã tải dữ liệu từ Firebase");
-        } else {
-            console.log("Chưa có dữ liệu trên Firebase");
-        }
-    } catch (err) {
-        console.error("Lỗi đọc Firebase:", err);
-    }
-}
-
-window.testFirebase = async function () { await window.saveToFirebase(); }
-window.db = db;
-console.log("Đã kết nối Firebase");
-window.loadFromFirebase();
-</script>
 </body>
 </html>
