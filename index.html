@@ -416,7 +416,8 @@ function startProcessingExcel(input) {
                                     name: cellB,
                                     phone: cleanPhone,
                                     status: "present",
-                                    note: ""
+                                    note: "",
+                                   absentTime: "" // Thêm trường lưu thời gian vắng
                                 });
                                 return;
                             }
@@ -570,7 +571,11 @@ function renderFullSystemUI() {
 function renderAbsentRowsHtml(students) {
     const absentStudents = students.filter(s => s.status === 'absent');
     if (absentStudents.length === 0) return '<li><em>Chưa có học sinh vắng</em></li>';
-    return absentStudents.map(s => `<li>• ${s.name} ${s.note ? '(' + s.note + ')' : '(Chưa rõ lý do)'}</li>`).join('');
+    return absentStudents.map(s => {
+        let timeStr = s.absentTime ? ` <span style="color: #ffd700; font-size: 0.8rem;">[${s.absentTime}]</span>` : '';
+        let noteStr = s.note ? ' (' + s.note + ')' : '(Chưa rõ lý do)';
+        return `<li>• ${s.name}${timeStr} ${noteStr}</li>`;
+    }).join('');
 }
 
 function renderStudentCardsHtml(classKey, students) {
@@ -622,8 +627,11 @@ function toggleAbsentStatus(classKey, studentId) {
     if (student) {
         if (student.status === 'absent') {
             student.status = 'present';
+            student.absentTime = ""; // Xóa thời gian khi bỏ vắng
         } else {
             student.status = 'absent';
+            let now = new Date();
+            student.absentTime = now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' }); // Lấy giờ hiện tại
         }
         saveDatabaseState();
         
@@ -644,6 +652,12 @@ function updateStudentStatus(classKey, studentId, status) {
     let student = bigClassesDatabase[classKey].students.find(s => s.id === studentId);
     if (student) {
         student.status = status;
+if (status === 'absent') {
+            let now = new Date();
+            student.absentTime = now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        } else {
+            student.absentTime = "";
+        }
         saveDatabaseState();
         
         const classKeyId = classKey.replace(/\s+/g, '-');
