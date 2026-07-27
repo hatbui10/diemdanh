@@ -228,14 +228,27 @@ border-radius: 20px;
 
 <h2>HỆ THỐNG QUẢN LÝ ĐIỂM DANH ĐỘNG</h2>
 
+
+
+
 <div class="upload-card">
     <div class="btn-group-top">
-        <label for="excelFileInput" class="custom-upload-btn">📂 Tải lên File Excel</label>
-        <input type="file" id="excelFileInput" accept=".xlsx, .xls" style="display: none;" onchange="startProcessingExcel(this)">
-        <button class="btn-danger-top" onclick="clearSystemCache()">XÓA dữ liệu CŨ</button>
+        <!-- Ô nhập mật khẩu -->
+        <input type="password" id="uploadPasswordInput" placeholder="Nhập mật khẩu để mở khóa..." oninput="verifyUploadPassword(this)" style="width: 100%; background: #050508; border: 1px solid #ffd700; color: #fff; padding: 10px; font-size: 0.85rem; border-radius: 4px; outline: none; margin-bottom: 10px; text-align: center;">
+        
+        <!-- Nhóm nút tải file và xóa dữ liệu (Ban đầu ẩn đi) -->
+        <div id="protectedUploadActions" style="display: none;">
+            <label for="excelFileInput" class="custom-upload-btn">📂 Tải lên File Excel</label>
+            <input type="file" id="excelFileInput" accept=".xlsx, .xls" style="display: none;" onchange="startProcessingExcel(this)">
+            <button class="btn-danger-top" onclick="clearSystemCache()">XÓA dữ liệu CŨ</button>
+        </div>
     </div>
-    <div id="fileStatusMessage" class="file-status">Chưa có dữ liệu học viên. Vui lòng chọn tệp Excel.</div>
+    <div id="fileStatusMessage" class="file-status">Vui lòng nhập mật khẩu để hiển thị chức năng tải file.</div>
 </div>
+
+
+
+
 
 <div class="progress-container" id="progressContainer">
     <div class="progress-bar" id="progressBar">0%</div>
@@ -884,6 +897,50 @@ function toggleNewStudentBlink(buttonElement, classKey) {
     }
 }
 
+
+
+// Mật khẩu cố định dành cho 2 người được cấp quyền
+const UPLOAD_SECRET_PASSWORD = "123456"; 
+
+function checkUploadPassword(event) {
+    const passwordInput = document.getElementById('uploadPasswordInput');
+    if (passwordInput.value !== UPLOAD_SECRET_PASSWORD) {
+        alert("Sai mật khẩu! Bạn không có quyền tải lên hoặc xóa dữ liệu điểm danh.");
+        event.preventDefault(); // Chặn hành động mở file
+        return false;
+    }
+    return true;
+}
+
+function checkDeletePassword() {
+    const passwordInput = document.getElementById('uploadPasswordInput');
+    if (passwordInput.value !== UPLOAD_SECRET_PASSWORD) {
+        alert("Sai mật khẩu! Bạn không có quyền xóa dữ liệu hệ thống.");
+        return;
+    }
+    clearSystemCache();
+}
+
+
+
+
+
+function verifyUploadPassword(inputElement) {
+    const actionContainer = document.getElementById('protectedUploadActions');
+    const statusMessage = document.getElementById('fileStatusMessage');
+    
+    if (inputElement.value === UPLOAD_SECRET_PASSWORD) {
+        // Đúng mật khẩu: Hiện nút tải file và xóa dữ liệu
+        actionContainer.style.display = 'block';
+        statusMessage.style.color = "#00ff66";
+        statusMessage.innerText = "🔓 Đã mở khóa quyền! Vui lòng chọn tệp Excel.";
+    } else {
+        // Sai hoặc chưa đủ mật khẩu: Ẩn các nút đi
+        actionContainer.style.display = 'none';
+        statusMessage.style.color = "#ffd700";
+        statusMessage.innerText = "Vui lòng nhập mật khẩu để hiển thị chức năng tải file.";
+    }
+}
 </script>
 
 <script type="module">
