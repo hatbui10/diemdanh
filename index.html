@@ -46,6 +46,10 @@ body.role-teacher .btn-call,
 body.role-teacher .btn-delete,
 body.role-teacher .copy-btn,
 body.role-teacher .student-controls-row .btn-present,
+/* Ẩn các ô điểm danh thời gian thực (time-slots-row) đối với tài khoản Giáo Viên */
+body.role-teacher .time-slots-row {
+    display: none !important;
+}
 body.role-teacher .student-controls-row .note-select {
     display: none !important;
 }
@@ -694,7 +698,7 @@ function renderStudentCardsHtml(classKey, students) {
                 btnClass += ' locked';
             }
 
-            return `<button class="${btnClass}" onclick="handleTimeSlotClick('${classKey}', ${student.id}, ${slotIdx})">Ca ${slotIdx + 1}</button>`;
+            return `<button class="${btnClass}" onclick="handleTimeSlotClick('${classKey}', ${student.id}, ${slotIdx})">Buổi ${slotIdx + 1}</button>`;
         }).join('');
 
         return `
