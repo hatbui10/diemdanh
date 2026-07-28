@@ -282,26 +282,26 @@ border-radius: 20px;
             pointer-events: none !important;
         }
 
-/* 🟢 NÚT ĐỦ VỚI NỀN XANH LÁ VÀ VIỀN CẦU VỒNG 7 MÀU */
-@keyframes rainbowGlow {
-    0% { border-color: #ff0000; box-shadow: 0 0 12px #ff0000, inset 0 0 5px #ff0000; }
-    14% { border-color: #ff7f00; box-shadow: 0 0 12px #ff7f00, inset 0 0 5px #ff7f00; }
-    28% { border-color: #ffff00; box-shadow: 0 0 12px #ffff00, inset 0 0 5px #ffff00; }
-    42% { border-color: #00ff00; box-shadow: 0 0 12px #00ff00, inset 0 0 5px #00ff00; }
-    57% { border-color: #00ffff; box-shadow: 0 0 12px #00ffff, inset 0 0 5px #00ffff; }
-    71% { border-color: #0000ff; box-shadow: 0 0 12px #0000ff, inset 0 0 5px #0000ff; }
-    85% { border-color: #8b00ff; box-shadow: 0 0 12px #8b00ff, inset 0 0 5px #8b00ff; }
-    100% { border-color: #ff0000; box-shadow: 0 0 12px #ff0000, inset 0 0 5px #ff0000; }
+/* 🟢 NÚT ĐỦ VỚI MÃ MÀU NỀN #90B800 VÀ VIỀN CẦU VỒNG 7 MÀU CHO NỀN TỐI */
+@keyframes rainbowGlowDark {
+    0% { border-color: #ff3333; box-shadow: 0 0 15px rgba(255, 51, 51, 0.6), inset 0 0 5px rgba(255, 51, 51, 0.3); }
+    14% { border-color: #ff9933; box-shadow: 0 0 15px rgba(255, 153, 51, 0.6), inset 0 0 5px rgba(255, 153, 51, 0.3); }
+    28% { border-color: #ffff33; box-shadow: 0 0 15px rgba(255, 255, 51, 0.6), inset 0 0 5px rgba(255, 255, 51, 0.3); }
+    42% { border-color: #33ff33; box-shadow: 0 0 15px rgba(51, 255, 51, 0.6), inset 0 0 5px rgba(51, 255, 51, 0.3); }
+    57% { border-color: #33ffff; box-shadow: 0 0 15px rgba(51, 255, 255, 0.6), inset 0 0 5px rgba(51, 255, 255, 0.3); }
+    71% { border-color: #3333ff; box-shadow: 0 0 15px rgba(51, 51, 255, 0.6), inset 0 0 5px rgba(51, 51, 255, 0.3); }
+    85% { border-color: #9933ff; box-shadow: 0 0 15px rgba(153, 51, 255, 0.6), inset 0 0 5px rgba(153, 51, 255, 0.3); }
+    100% { border-color: #ff3333; box-shadow: 0 0 15px rgba(255, 51, 51, 0.6), inset 0 0 5px rgba(255, 51, 51, 0.3); }
 }
 
 .btn-class-full {
     display: block;
     width: 50%;
     margin: 0 auto 12px auto;
-    background: rgba(0, 255, 102, 0.2); /* Nền xanh lá trong suốt */
-    border: 2px solid #00ff66;         /* Viền xanh lá */
+    background: #90B800;                 /* Sử dụng màu nền theo yêu cầu */
+    border: 2px solid #bfff00;           /* Viền xanh sáng nổi bật trên nền */
     border-radius: 20px;
-    color: #00ff66;                    /* Chữ xanh lá */
+    color: #ffffff;                      /* Chữ trắng sáng rõ nét */
     padding: 10px;
     font-weight: bold;
     font-size: 0.85rem;
@@ -309,21 +309,63 @@ border-radius: 20px;
     text-transform: uppercase;
     text-align: center;
     transition: all 0.2s ease;
-    box-shadow: 0 0 8px rgba(0, 255, 102, 0.3);
+    box-shadow: 0 0 10px rgba(144, 184, 0, 0.4);
 }
 
 .btn-class-full:active {
-    background: #00ff66;
-    color: #000;
+    background: #7ca000;
+    color: #fff;
 }
 
-/* Khi bấm vào nút Đủ: Nền xanh lá đậm kết hợp viền cầu vồng 7 màu chạy nhấp nháy phát sáng */
+/* Khi bấm vào nút Đủ (Trạng thái đã Đủ): Giữ nền #90B800 kết hợp viền cầu vồng 7 màu chạy lung linh */
 .btn-class-full.is-blinking {
-    background: rgba(0, 51, 17, 0.8) !important; /* Nền xanh lá đậm */
-    color: #00ff66 !important;
-    animation: rainbowGlow 2s infinite linear, alertBlink 0.8s infinite ease-in-out;
+    background: #90B800 !important;       
+    color: #ffffff !important;           
+    animation: rainbowGlowDark 2.5s infinite linear, alertBlink 0.8s infinite ease-in-out;
 }
 
+
+/* 🟢 NÚT ĐỦ VỚI MÃ MÀU NỀN #90B800 VÀ VIỀN CẦU VỒNG 7 MÀU CHO NỀN TỐI */
+@keyframes rainbowGlowDark {
+    0% { border-color: #ff3333; box-shadow: 0 0 15px rgba(255, 51, 51, 0.6), inset 0 0 5px rgba(255, 51, 51, 0.3); }
+    14% { border-color: #ff9933; box-shadow: 0 0 15px rgba(255, 153, 51, 0.6), inset 0 0 5px rgba(255, 153, 51, 0.3); }
+    28% { border-color: #ffff33; box-shadow: 0 0 15px rgba(255, 255, 51, 0.6), inset 0 0 5px rgba(255, 255, 51, 0.3); }
+    42% { border-color: #33ff33; box-shadow: 0 0 15px rgba(51, 255, 51, 0.6), inset 0 0 5px rgba(51, 255, 51, 0.3); }
+    57% { border-color: #33ffff; box-shadow: 0 0 15px rgba(51, 255, 255, 0.6), inset 0 0 5px rgba(51, 255, 255, 0.3); }
+    71% { border-color: #3333ff; box-shadow: 0 0 15px rgba(51, 51, 255, 0.6), inset 0 0 5px rgba(51, 51, 255, 0.3); }
+    85% { border-color: #9933ff; box-shadow: 0 0 15px rgba(153, 51, 255, 0.6), inset 0 0 5px rgba(153, 51, 255, 0.3); }
+    100% { border-color: #ff3333; box-shadow: 0 0 15px rgba(255, 51, 51, 0.6), inset 0 0 5px rgba(255, 51, 51, 0.3); }
+}
+
+.btn-class-full {
+    display: block;
+    width: 50%;
+    margin: 0 auto 12px auto;
+    background: #90B800;                 /* Sử dụng màu nền theo yêu cầu */
+    border: 2px solid #bfff00;           /* Viền xanh sáng nổi bật trên nền */
+    border-radius: 20px;
+    color: #ffffff;                      /* Chữ trắng sáng rõ nét */
+    padding: 10px;
+    font-weight: bold;
+    font-size: 0.85rem;
+    cursor: pointer;
+    text-transform: uppercase;
+    text-align: center;
+    transition: all 0.2s ease;
+    box-shadow: 0 0 10px rgba(144, 184, 0, 0.4);
+}
+
+.btn-class-full:active {
+    background: #7ca000;
+    color: #fff;
+}
+
+/* Khi bấm vào nút Đủ (Trạng thái đã Đủ): Giữ nền #90B800 kết hợp viền cầu vồng 7 màu chạy lung linh */
+.btn-class-full.is-blinking {
+    background: #90B800 !important;       
+    color: #ffffff !important;           
+    animation: rainbowGlowDark 2.5s infinite linear, alertBlink 0.8s infinite ease-in-out;
+}
 
 </style>
 </head>
@@ -675,7 +717,7 @@ function renderFullSystemUI() {
                     <h3>Danh Sách Chi Tiết</h3>
                     <br>
                     
-                  <button class="btn-new-student-direct" onclick="toggleNewStudentBlink(this, '${classKey}')">➕ Có học sinh mới</button>
+                 
 <div style="display: flex; gap: 8px; margin-bottom: 10px;">
     <button class="btn-new-student-direct" onclick="toggleNewStudentBlink(this, '${classKey}')" style="flex: 1;">➕ Có học sinh mới</button>
     <button class="btn-class-full" onclick="toggleClassFullBlink(this, '${classKey}')" style="flex: 1;">✅ Đủ</button>
@@ -984,6 +1026,7 @@ function addNewStudentToClass(classKey) {
     refreshClassUI(classKey);
     updateGroupStatsText(bigClassesDatabase[classKey].sheet);
 }
+
 
 
 
