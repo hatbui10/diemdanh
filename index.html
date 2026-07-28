@@ -367,6 +367,38 @@ border-radius: 20px;
     animation: rainbowGlowDark 2.5s infinite linear, alertBlink 0.8s infinite ease-in-out;
 }
 
+
+
+.absent-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 0;
+margin-right: 80px; /* Thêm dòng này để cách mép phải 20px */
+    border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
+}
+.absent-info {
+    flex-grow: 1;
+    color: #ffc0cb; /* Màu chữ hồng nhẹ cho danh sách vắng */
+    font-size: 0.85rem;
+}
+.btn-da-den {
+    background: #499A13;
+    color: #fff;
+    border: none;
+    padding: 4px 10px;
+    font-size: 0.75rem;
+    border-radius: 4px;
+    width: 75px;
+    text-align: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    margin-left: 10px;
+}
+
+
+
+
 </style>
 </head>
 <body class="role-teacher">
@@ -736,8 +768,9 @@ function renderFullSystemUI() {
                             <button class="copy-btn" onclick="copyAbsentReport('${classKey}')">Copy</button>
                         </div>
                         <ul class="absent-list" id="absentList-${classKey.replace(/\s+/g, '-')}">
-                            ${renderAbsentRowsHtml(students)}
+                             ${renderAbsentRowsHtml(classKey, students)}
                         </ul>
+
                     </div>
                     
                     <div class="student-list" id="studentList-${classKey.replace(/\s+/g, '-')}">
@@ -750,13 +783,18 @@ function renderFullSystemUI() {
     });
 }
 
-function renderAbsentRowsHtml(students) {
+function renderAbsentRowsHtml(classKey, students) {
     const absentStudents = students.filter(s => s.status === 'absent');
     if (absentStudents.length === 0) return '<li><em>Chưa có học sinh vắng</em></li>';
+    
     return absentStudents.map(s => {
-        let timeStr = s.absentTime ? ` <span style="color: #ffd700; font-size: 0.8rem;">[${s.absentTime}]</span>` : '';
-        let noteStr = s.note ? ' (' + s.note + ')' : '(Chưa rõ lý do)';
-        return `<li>• ${s.name}${timeStr} ${noteStr}</li>`;
+        return `
+        <li class="absent-row">
+            <div class="absent-info">
+                • ${s.name}  (${s.reason || 'Chưa rõ lý do'})
+            </div>
+            <button class="btn-da-den" onclick="updateStudentStatus('${classKey}', ${s.id}, 'present')">Đã đến</button>
+        </li>`;
     }).join('');
 }
 
@@ -954,7 +992,7 @@ function refreshClassUI(classKey) {
     const present = total - absent;
     
     document.getElementById(`stats-${classKeyId}`).innerText = 'Sĩ số: ' + total + ' | Có mặt: ' + present + ' | Vắng: ' + absent;
-    document.getElementById(`absentList-${classKeyId}`).innerHTML = renderAbsentRowsHtml(studentsArr);
+   document.getElementById(`absentList-${classKeyId}`).innerHTML = renderAbsentRowsHtml(classKey, studentsArr);
     document.getElementById(`studentList-${classKeyId}`).innerHTML = renderStudentCardsHtml(classKey, studentsArr);
 }
 
@@ -969,7 +1007,7 @@ function updateStudentNote(classKey, studentId, value) {
     if (student) {
         student.note = value;
         saveDatabaseState();
-        document.getElementById(`absentList-${classKey.replace(/\s+/g, '-')}`).innerHTML = renderAbsentRowsHtml(bigClassesDatabase[classKey].students);
+        document.getElementById(`absentList-${classKey.replace(/\s+/g, '-')}`).innerHTML = renderAbsentRowsHtml(classKey, bigClassesDatabase[classKey].students);
     }
 }
 
