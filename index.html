@@ -877,7 +877,7 @@ function renderStudentCardsHtml(classKey, students) {
                 </div>
 
                 <div class="student-controls-row" style="margin-top: 6px;">
-                    <button class="btn-action btn-present ${presentActive}" onclick="updateStudentStatus('${classKey}', ${student.id}, 'present')">Đi Học</button>
+                    <button class="btn-action btn-present ${presentActive}" onclick="updateStudentStatus('${classKey}', ${student.id}, 'present')" style="display: none">Đi Học</button>
                     <select class="note-select" onchange="updateStudentNote('${classKey}', ${student.id}, this.value)">
                         <option value="" ${student.note===''?'selected':''}>-- Ghi chú --</option>
                         <option value="***" ${student.note==='***'?'selected':''}>***</option>
