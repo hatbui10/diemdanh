@@ -53,6 +53,11 @@ body.role-teacher .time-slots-row {
 body.role-teacher .student-controls-row .note-select {
     display: none !important;
 }
+
+/* Ẩn số điện thoại của học sinh đối với tài khoản Giáo Viên */
+body.role-teacher .student-phone {
+    display: none !important;
+}
 /* Đảm bảo khung thêm học sinh không bị ẩn ở giao diện giáo viên */
 body.role-teacher .add-student-box {
     display: none; /* Chỉ hiện khi bấm nút Có học sinh mới */
@@ -140,12 +145,35 @@ body.role-teacher .add-student-box {
         .absent-list li { padding: 3px 0; border-bottom: 1px solid rgba(255, 0, 127, 0.1); }
         
         .student-list { display: flex; flex-direction: column; gap: 6px; }
-        .student-card { background: #0B1849; border: 1px solid #333; border-left: 4px solid #00f0ff; border-radius: 4px; padding: 6px 8px; display: flex; flex-direction: column; gap: 4px; transition: background 0.2s; }
+      .student-card { 
+    background: #0B1849; 
+    border: 1px solid #333; 
+    border-left: 4px solid #00f0ff; 
+    border-radius: 4px; 
+    padding: 4px 4px; /* Tăng khoảng đệm trên dưới cho cân đối */
+    display: flex; 
+    flex-direction: column; 
+    justify-content: center; /* Buộc căn giữa theo chiều dọc */
+    min-height: 45px; /* Đặt chiều cao tối thiểu để thấy rõ độ thoáng */
+    transition: background 0.2s; 
+}
+
+.student-info-row { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; /* Căn giữa theo chiều dọc cho tên và nút Vắng */
+    width: 100%;
+    gap: 8px; 
+    border-bottom: none !important; 
+    padding-bottom: 0px; 
+    margin: auto 0; /* Tự động căn giữa tuyệt đối trong thẻ cha */
+}
+
         .student-card.status-absent { border-left-color: #ff007f; background: #1a0813; }
         .student-card.status-present { border-left-color: #00ff66; background: #081a10; }
         .student-card.highlight-search { border: 1px solid #ffd700 !important; box-shadow: 0 0 12px rgba(255, 215, 0, 0.4); }
         
-        .student-info-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; border-bottom: 1px solid #222; padding-bottom: 6px; }
+       
         .student-meta { display: flex; flex-direction: column; gap: 2px; flex: 1; }
         .meta-top-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
         .student-name { font-weight: bold; font-size: 0.95rem; color: #fff; }
@@ -254,6 +282,47 @@ border-radius: 20px;
             pointer-events: none !important;
         }
 
+/* 🟢 NÚT ĐỦ VỚI NỀN XANH LÁ VÀ VIỀN CẦU VỒNG 7 MÀU */
+@keyframes rainbowGlow {
+    0% { border-color: #ff0000; box-shadow: 0 0 12px #ff0000, inset 0 0 5px #ff0000; }
+    14% { border-color: #ff7f00; box-shadow: 0 0 12px #ff7f00, inset 0 0 5px #ff7f00; }
+    28% { border-color: #ffff00; box-shadow: 0 0 12px #ffff00, inset 0 0 5px #ffff00; }
+    42% { border-color: #00ff00; box-shadow: 0 0 12px #00ff00, inset 0 0 5px #00ff00; }
+    57% { border-color: #00ffff; box-shadow: 0 0 12px #00ffff, inset 0 0 5px #00ffff; }
+    71% { border-color: #0000ff; box-shadow: 0 0 12px #0000ff, inset 0 0 5px #0000ff; }
+    85% { border-color: #8b00ff; box-shadow: 0 0 12px #8b00ff, inset 0 0 5px #8b00ff; }
+    100% { border-color: #ff0000; box-shadow: 0 0 12px #ff0000, inset 0 0 5px #ff0000; }
+}
+
+.btn-class-full {
+    display: block;
+    width: 50%;
+    margin: 0 auto 12px auto;
+    background: rgba(0, 255, 102, 0.2); /* Nền xanh lá trong suốt */
+    border: 2px solid #00ff66;         /* Viền xanh lá */
+    border-radius: 20px;
+    color: #00ff66;                    /* Chữ xanh lá */
+    padding: 10px;
+    font-weight: bold;
+    font-size: 0.85rem;
+    cursor: pointer;
+    text-transform: uppercase;
+    text-align: center;
+    transition: all 0.2s ease;
+    box-shadow: 0 0 8px rgba(0, 255, 102, 0.3);
+}
+
+.btn-class-full:active {
+    background: #00ff66;
+    color: #000;
+}
+
+/* Khi bấm vào nút Đủ: Nền xanh lá đậm kết hợp viền cầu vồng 7 màu chạy nhấp nháy phát sáng */
+.btn-class-full.is-blinking {
+    background: rgba(0, 51, 17, 0.8) !important; /* Nền xanh lá đậm */
+    color: #00ff66 !important;
+    animation: rainbowGlow 2s infinite linear, alertBlink 0.8s infinite ease-in-out;
+}
 
 
 </style>
@@ -607,6 +676,10 @@ function renderFullSystemUI() {
                     <br>
                     
                   <button class="btn-new-student-direct" onclick="toggleNewStudentBlink(this, '${classKey}')">➕ Có học sinh mới</button>
+<div style="display: flex; gap: 8px; margin-bottom: 10px;">
+    <button class="btn-new-student-direct" onclick="toggleNewStudentBlink(this, '${classKey}')" style="flex: 1;">➕ Có học sinh mới</button>
+    <button class="btn-class-full" onclick="toggleClassFullBlink(this, '${classKey}')" style="flex: 1;">✅ Đủ</button>
+</div>
 
 <!-- Khung nhập thông tin học viên mới -->
 <div class="add-student-box" id="addBox-${classKey.replace(/\s+/g, '-')}" style="display: none; flex-direction: column; gap: 8px; margin-bottom: 15px;">
@@ -1214,6 +1287,19 @@ async function confirmResetTimeSlots() {
     }
 }
 
+function toggleClassFullBlink(buttonElement, classKey) {
+    // Đảo trạng thái nhấp nháy khi giáo viên click vào nút Đủ
+    buttonElement.classList.toggle('is-blinking');
+    
+    // Kiểm tra trạng thái hiện tại để có thể lưu hoặc thông báo nếu cần
+    const isFull = buttonElement.classList.contains('is-blinking');
+    if (isFull) {
+        // Có thể bổ sung logic lưu trạng thái lớp đã đủ vào database nếu muốn
+        console.log(`Lớp ${classKey} đã được đánh dấu là ĐỦ.`);
+    } else {
+        console.log(`Lớp ${classKey} đã hủy trạng thái Đủ.`);
+    }
+}
 
 
 </script>
