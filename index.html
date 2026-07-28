@@ -40,15 +40,20 @@
             display: none !important;
         }
 
-        /* 2. GIÁO VIÊN: Chỉ hiện tên học sinh, nút Vắng, danh sách vắng, nút thêm học sinh mới */
-        body.role-teacher .upload-card,
-        body.role-teacher .btn-call,
-        body.role-teacher .btn-delete,
-        body.role-teacher .copy-btn,
-        body.role-teacher .student-controls-row .btn-present,
-        body.role-teacher .student-controls-row .note-select {
-            display: none !important;
-        }
+     /* 2. GIÁO VIÊN: Cho phép hiện khung thêm học sinh và các nút cơ bản */
+body.role-teacher .upload-card,
+body.role-teacher .btn-call,
+body.role-teacher .btn-delete,
+body.role-teacher .copy-btn,
+body.role-teacher .student-controls-row .btn-present,
+body.role-teacher .student-controls-row .note-select {
+    display: none !important;
+}
+/* Đảm bảo khung thêm học sinh không bị ẩn ở giao diện giáo viên */
+body.role-teacher .add-student-box {
+    display: none; /* Chỉ hiện khi bấm nút Có học sinh mới */
+}
+
 
         /* 3. TRỢ GIẢNG: Có tất cả các nút, nhưng nút gọi (btn-call) chỉ hiện khi học sinh đó bị bấm vắng */
        
@@ -597,8 +602,15 @@ function renderFullSystemUI() {
                     <h3>Danh Sách Chi Tiết</h3>
                     <br>
                     
-                    <button class="btn-new-student-direct" onclick="toggleNewStudentBlink(this, '${classKey}')">➕ Có học sinh mới</button>
-                    
+                  <button class="btn-new-student-direct" onclick="toggleNewStudentBlink(this, '${classKey}')">➕ Có học sinh mới</button>
+
+<!-- Khung nhập thông tin học viên mới -->
+<div class="add-student-box" id="addBox-${classKey.replace(/\s+/g, '-')}" style="display: none; flex-direction: column; gap: 8px; margin-bottom: 15px;">
+    <input type="text" id="inputName-${classKey.replace(/\s+/g, '-')}" placeholder="Nhập họ và tên học viên..." style="width: 100%; background: #050508; border: 1px solid #ffd700; color: #fff; padding: 10px; border-radius: 4px; outline: none;">
+    <input type="tel" id="inputPhone-${classKey.replace(/\s+/g, '-')}" placeholder="Nhập số điện thoại..." style="width: 100%; background: #050508; border: 1px solid #ffd700; color: #fff; padding: 10px; border-radius: 4px; outline: none;">
+    <button class="btn-add" onclick="addNewStudentToClass('${classKey}')" style="background: #ffd700; color: #000; border: none; padding: 10px; font-weight: bold; border-radius: 4px; cursor: pointer;">Xác Nhận Thêm Học Viên</button>
+</div>
+
                     <div class="absent-section">
                         <div class="absent-header">
                             <span class="absent-title">DANH SÁCH VẮNG HÔM NAY</span>
@@ -868,24 +880,36 @@ function addNewStudentToClass(classKey) {
     const phoneInput = document.getElementById(`inputPhone-${classIdStr}`);
     const name = nameInput.value.trim();
     const phone = phoneInput.value.trim().replace(/\s+/g, '') || 'Chưa có';
-    if (name === '') { alert('Vui lòng nhập tên học viên!'); return; }
+    
+    if (name === '') { 
+        alert('Vui lòng nhập tên học viên!'); 
+        return; 
+    }
 
     const studentsList = bigClassesDatabase[classKey].students;
     const nextId = studentsList.length > 0 ? Math.max(...studentsList.map(s => s.id)) + 1 : 1;
-    studentsList.push({ id: nextId, name: name, phone: phone, status: 'present', note: '' });
+    
+    // Thêm học sinh mới vào mảng dữ liệu
+    studentsList.push({ 
+        id: nextId, 
+        name: name, 
+        phone: phone, 
+        status: 'present', 
+        note: '',
+        timeSlots: Array(8).fill({ state: 'normal', timestamp: null })
+    });
+    
     saveDatabaseState();
     
+    // Reset ô input và cập nhật lại giao diện hiển thị của lớp
     nameInput.value = '';
     phoneInput.value = '';
-    const total = studentsList.length;
-    const absent = studentsList.filter(s => s.status === 'absent').length;
-    const present = total - absent;
-    document.getElementById(`stats-${classIdStr}`).innerText = 'Sĩ số: ' + total + ' | Có mặt: ' + present + ' | Vắng: ' + absent;
-    document.getElementById(`absentList-${classIdStr}`).innerHTML = renderAbsentRowsHtml(studentsList);
-    document.getElementById(`studentList-${classIdStr}`).innerHTML = renderStudentCardsHtml(classKey, studentsList);
-    
+    refreshClassUI(classKey);
     updateGroupStatsText(bigClassesDatabase[classKey].sheet);
 }
+
+
+
 
 function deleteStudentFromClass(classKey, studentId, studentName) {
     if (confirm(`Bạn có chắc chắn muốn XÓA học sinh [${studentName}] ra khỏi danh sách lớp [${classKey}]?`)) {
@@ -1032,17 +1056,23 @@ function clearSystemCache() {
 
 
 function toggleNewStudentBlink(buttonElement, classKey) {
-    // Đảo trạng thái class 'is-blinking' (Bấm lần 1: thêm class -> nhấp nháy. Bấm lần 2: gỡ class -> đứng yên)
+    // Đảo trạng thái class 'is-blinking' cho nút
     buttonElement.classList.toggle('is-blinking');
     
-    const isBlinking = buttonElement.classList.contains('is-blinking');
+    // Lấy ID khung nhập tương ứng của lớp
+    const classIdStr = classKey.replace(/\s+/g, '-');
+    const addBox = document.getElementById(`addBox-${classIdStr}`);
     
-    if (isBlinking) {
-        console.log(`Đã BẬT trạng thái nhấp nháy "Học sinh mới" cho lớp: ${classKey}`);
-    } else {
-        console.log(`Đã TẮT trạng thái nhấp nháy "Học sinh mới" cho lớp: ${classKey}`);
+    if (addBox) {
+        // Nếu nút đang nhấp nháy -> Hiện khung nhập, ngược lại thì ẩn đi
+        if (buttonElement.classList.contains('is-blinking')) {
+            addBox.style.display = 'flex';
+        } else {
+            addBox.style.display = 'none';
+        }
     }
 }
+
 
 
 
