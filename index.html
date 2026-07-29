@@ -431,8 +431,11 @@ margin-right: 20px; /* Thêm dòng này để cách mép phải 20px */
 </div>
 
 <script>
+
 const targetSheets = ["SV", "12", "11", "10", "9", "8", "7", "6", "5", "4", "3", "2", "DH25", "DH26"];
 let bigClassesDatabase = {};
+const urlParams = new URLSearchParams(window.location.search);
+const autoOpenClass = urlParams.get("class");
 
 // HÀM CHUYỂN ĐỔI QUYỀN TRUY CẬP (Đã bỏ quản trị viên)
 function switchUserRole(role) {
@@ -1343,43 +1346,29 @@ function toggleClassFullBlink(buttonElement, classKey) {
 
 
 	window.addEventListener('DOMContentLoaded', () => {
-    // Đợi một chút để dữ liệu từ Firebase / LocalStorage kịp tải và vẽ xong giao diện
-    setTimeout(() => {
-        const urlParams = new URLSearchParams(window.location.search);
-        const targetClass = urlParams.get('class');
+    // 1. Đọc tham số 'lop' từ URL (ví dụ: ?lop=Skykid)
+    const urlParams = new URLSearchParams(window.location.search);
+    const targetLop = urlParams.get('lop');
 
-        if (targetClass) {
-            const decodedClass = decodeURIComponent(targetClass).trim();
+    if (targetLop) {
+        // 2. Tìm phần tử chứa tên lớp hoặc ID tương ứng trong HTML 2
+        // (Giả sử các thẻ biểu diễn lớp có attribute data-lop="tên_lớp" hoặc id tương ứng)
+        const element = document.querySelector(`[data-lop="${targetLop}"]`) || document.getElementById(targetLop);
+
+        if (element) {
+            // 3. Cuộn mượt mà đến vị trí của lớp đó
+            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+            // 4. Thêm hiệu ứng nổi bật (ví dụ: đổi màu viền, chớp nháy hoặc thêm class highlight)
+            element.classList.add('highlight-class');
             
-            // Tìm thẻ chứa lớp học dựa vào thuộc tính data-classname-box đã gán lúc render
-            const classWrapper = document.querySelector(`[data-classname-box="${decodedClass}"]`);
-            
-            if (classWrapper) {
-                // 1. Mở rộng (Active) khối lớp con bên trong
-                classWrapper.classList.add('active');
-                
-                // 2. Tìm khối nhóm cha (Ví dụ: Khối THCS, THPT...) và mở rộng luôn khối đó
-                const groupPanel = classWrapper.closest('.group-panel');
-                if (groupPanel) {
-                    const groupWrapper = groupPanel.closest('.group-block-wrapper');
-                    if (groupWrapper) {
-                        groupWrapper.classList.add('active');
-                    }
-                }
-
-                // 3. Cuộn màn hình mượt mà đến đúng vị trí lớp đó
-                setTimeout(() => {
-                    classWrapper.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }, 200);
-
-                console.log("Đã tự động mở và cuộn đến lớp:", decodedClass);
-            } else {
-                console.warn("Không tìm thấy tên lớp khớp trong hệ thống:", decodedClass);
-            }
+            // Hoặc đổi style trực tiếp nếu chưa có sẵn class CSS:
+            element.style.transition = 'all 0.5s ease';
+            element.style.boxShadow = '0 0 15px #00ff00';
+            element.style.border = '2px solid #00ff00';
         }
-    }, 800); // Delay 800ms để đảm bảo renderHTML hoàn tất
+    }
 });
-
 
 
 </script>
@@ -1430,6 +1419,15 @@ window.loadFromFirebase = async function () {
                 localStorage.setItem("big_classes_filename", data.filename);
             }
             renderFullSystemUI();
+ 
+
+if (autoOpenClass) {
+    setTimeout(() => {
+        openClassByName(autoOpenClass);
+    }, 300);
+}
+
+
             console.log("Đã tải dữ liệu từ Firebase");
         } else {
             console.log("Chưa có dữ liệu trên Firebase");
@@ -1443,6 +1441,35 @@ window.testFirebase = async function () { await window.saveToFirebase(); }
 window.db = db;
 console.log("Đã kết nối Firebase");
 window.loadFromFirebase();
+
+
+function openClassByName(className) {
+
+    const headers = document.querySelectorAll(".class-accordion-header");
+
+    for (const header of headers) {
+
+        const title = header.querySelector(".class-main-title");
+
+        if (!title) continue;
+
+        if (title.textContent.trim().toLowerCase() === className.trim().toLowerCase()) {
+
+            const wrapper = header.closest(".class-block-wrapper");
+
+            if (wrapper && !wrapper.classList.contains("active")) {
+                header.click();
+            }
+
+            wrapper.scrollIntoView({
+                behavior: "smooth",
+                block: "start"
+            });
+
+            break;
+        }
+    }
+}
 </script>
 </body>
 </html>
