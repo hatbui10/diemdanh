@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -1518,6 +1517,49 @@ function openClassByName(className) {
 
     console.warn("Không tìm thấy lớp:", className);
 }
+
+
+
+window.addEventListener('DOMContentLoaded', (event) => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const className = urlParams.get('class'); // Ví dụ nhận được: "Skykid"
+
+    if (className) {
+        // Lọc lấy từ khóa chính của lớp, chuyển về chữ thường và bỏ khoảng trắng thừa
+        const mainKeyword = className.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+
+        // Lấy tất cả các khối hiển thị lớp học trên trang điểm danh
+        // (Hãy thay '.class-card' hoặc thẻ chứa tên lớp bằng class thực tế của trang điểm danh)
+        const classCards = document.querySelectorAll('.class-card, .accordion-item, .box-lop'); 
+
+        classCards.forEach(card => {
+            const cardText = card.textContent.trim().toLowerCase();
+            const cardKeyword = cardText.replace(/[^a-z0-9]/g, '');
+
+            // Nếu phần chữ chính của tên lớp xuất hiện trong tiêu đề card điểm danh
+            if (cardKeyword.includes(mainKeyword)) {
+                // Cuộn màn hình đến lớp đó
+                card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                
+                // Thêm hiệu ứng nhấp nháy hoặc màu viền nổi bật để dễ nhận diện
+                card.style.border = "2px solid #00f2fe";
+                card.style.boxShadow = "0 0 15px rgba(0, 242, 254, 0.6)";
+
+                // Tự động mở rộng nội dung nếu card đang bị thu gọn
+                const toggleBtn = card.querySelector('.dropdown-toggle, .btn-toggle, button');
+                if (toggleBtn) {
+                    toggleBtn.click();
+                }
+            }
+        });
+    }
+});
+
+
+
+
+
+
 </script>
 </body>
 </html>
