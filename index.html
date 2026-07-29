@@ -282,47 +282,6 @@ border-radius: 20px;
             pointer-events: none !important;
         }
 
-/* 🟢 NÚT ĐỦ VỚI MÃ MÀU NỀN #90B800 VÀ VIỀN CẦU VỒNG 7 MÀU CHO NỀN TỐI */
-@keyframes rainbowGlowDark {
-    0% { border-color: #ff3333; box-shadow: 0 0 15px rgba(255, 51, 51, 0.6), inset 0 0 5px rgba(255, 51, 51, 0.3); }
-    14% { border-color: #ff9933; box-shadow: 0 0 15px rgba(255, 153, 51, 0.6), inset 0 0 5px rgba(255, 153, 51, 0.3); }
-    28% { border-color: #ffff33; box-shadow: 0 0 15px rgba(255, 255, 51, 0.6), inset 0 0 5px rgba(255, 255, 51, 0.3); }
-    42% { border-color: #33ff33; box-shadow: 0 0 15px rgba(51, 255, 51, 0.6), inset 0 0 5px rgba(51, 255, 51, 0.3); }
-    57% { border-color: #33ffff; box-shadow: 0 0 15px rgba(51, 255, 255, 0.6), inset 0 0 5px rgba(51, 255, 255, 0.3); }
-    71% { border-color: #3333ff; box-shadow: 0 0 15px rgba(51, 51, 255, 0.6), inset 0 0 5px rgba(51, 51, 255, 0.3); }
-    85% { border-color: #9933ff; box-shadow: 0 0 15px rgba(153, 51, 255, 0.6), inset 0 0 5px rgba(153, 51, 255, 0.3); }
-    100% { border-color: #ff3333; box-shadow: 0 0 15px rgba(255, 51, 51, 0.6), inset 0 0 5px rgba(255, 51, 51, 0.3); }
-}
-
-.btn-class-full {
-    display: block;
-    width: 50%;
-    margin: 0 auto 12px auto;
-    background: #90B800;                 /* Sử dụng màu nền theo yêu cầu */
-    border: 2px solid #bfff00;           /* Viền xanh sáng nổi bật trên nền */
-    border-radius: 20px;
-    color: #ffffff;                      /* Chữ trắng sáng rõ nét */
-    padding: 10px;
-    font-weight: bold;
-    font-size: 0.85rem;
-    cursor: pointer;
-    text-transform: uppercase;
-    text-align: center;
-    transition: all 0.2s ease;
-    box-shadow: 0 0 10px rgba(144, 184, 0, 0.4);
-}
-
-.btn-class-full:active {
-    background: #7ca000;
-    color: #fff;
-}
-
-/* Khi bấm vào nút Đủ (Trạng thái đã Đủ): Giữ nền #90B800 kết hợp viền cầu vồng 7 màu chạy lung linh */
-.btn-class-full.is-blinking {
-    background: #90B800 !important;       
-    color: #ffffff !important;           
-    animation: rainbowGlowDark 2.5s infinite linear, alertBlink 0.8s infinite ease-in-out;
-}
 
 
 /* 🟢 NÚT ĐỦ VỚI MÃ MÀU NỀN #90B800 VÀ VIỀN CẦU VỒNG 7 MÀU CHO NỀN TỐI */
@@ -1383,41 +1342,45 @@ function toggleClassFullBlink(buttonElement, classKey) {
 }
 
 
-	window.addEventListener('DOMContentLoaded', (event) => {
-    // 1. Đọc tham số từ URL (ví dụ: ?class=Cloudkid)
-    const urlParams = new URLSearchParams(window.location.search);
-    const targetClass = urlParams.get('class');
+	window.addEventListener('DOMContentLoaded', () => {
+    // Đợi một chút để dữ liệu từ Firebase / LocalStorage kịp tải và vẽ xong giao diện
+    setTimeout(() => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const targetClass = urlParams.get('class');
 
-    if (targetClass) {
-        // Giải mã tên lớp phòng khi có ký tự đặc biệt như khoảng trắng (%20), dấu cộng (%2B)
-        const decodedClass = decodeURIComponent(targetClass);
+        if (targetClass) {
+            const decodedClass = decodeURIComponent(targetClass).trim();
+            
+            // Tìm thẻ chứa lớp học dựa vào thuộc tính data-classname-box đã gán lúc render
+            const classWrapper = document.querySelector(`[data-classname-box="${decodedClass}"]`);
+            
+            if (classWrapper) {
+                // 1. Mở rộng (Active) khối lớp con bên trong
+                classWrapper.classList.add('active');
+                
+                // 2. Tìm khối nhóm cha (Ví dụ: Khối THCS, THPT...) và mở rộng luôn khối đó
+                const groupPanel = classWrapper.closest('.group-panel');
+                if (groupPanel) {
+                    const groupWrapper = groupPanel.closest('.group-block-wrapper');
+                    if (groupWrapper) {
+                        groupWrapper.classList.add('active');
+                    }
+                }
 
-        // 2. Tìm tất cả các thẻ select trên trang để quét tìm ô chọn lớp
-        const allSelects = document.querySelectorAll('select');
-        let foundDropdown = null;
+                // 3. Cuộn màn hình mượt mà đến đúng vị trí lớp đó
+                setTimeout(() => {
+                    classWrapper.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 200);
 
-        for (let select of allSelects) {
-            // Kiểm tra xem trong các option của select này có chứa tên lớp cần tìm hay không
-            let hasOption = Array.from(select.options).some(option => option.value === decodedClass || option.text.trim() === decodedClass);
-            if (hasOption) {
-                foundDropdown = select;
-                break;
+                console.log("Đã tự động mở và cuộn đến lớp:", decodedClass);
+            } else {
+                console.warn("Không tìm thấy tên lớp khớp trong hệ thống:", decodedClass);
             }
         }
-
-        // Nếu tìm thấy ô chọn lớp phù hợp
-        if (foundDropdown) {
-            foundDropdown.value = decodedClass;
-            
-            // 3. Kích hoạt sự kiện change để trang tự load dữ liệu điểm danh của lớp đó lên
-            const changeEvent = new Event('change', { bubbles: true });
-            foundDropdown.dispatchEvent(changeEvent);
-            console.log("Đã tự động chọn lớp:", decodedClass);
-        } else {
-            console.warn("Không tìm thấy ô chọn lớp phù hợp cho:", decodedClass);
-        }
-    }
+    }, 800); // Delay 800ms để đảm bảo renderHTML hoàn tất
 });
+
+
 
 </script>
 
