@@ -1466,8 +1466,9 @@ console.log("Đã kết nối Firebase");
 
 
 window.addEventListener('DOMContentLoaded', (event) => {
+    // Hỗ trợ cả hai tên biến trên URL: ?class=... hoặc ?lop=...
     const urlParams = new URLSearchParams(window.location.search);
-    const targetLop = urlParams.get('class');
+    const targetLop = urlParams.get('class') || urlParams.get('lop');
 
     if (targetLop) {
         // Đợi một nhịp để hệ thống vẽ xong giao diện (hoặc tải xong từ Firebase/LocalStorage)
@@ -1477,27 +1478,31 @@ window.addEventListener('DOMContentLoaded', (event) => {
     }
 });
 
+// Hàm chuẩn hóa chuỗi tiếng Việt: chuyển về chữ thường, bỏ dấu và loại bỏ ký tự đặc biệt
+function normalizeString(str) {
+    if (!str) return "";
+    return str
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "") // Xóa dấu tiếng Việt
+        .replace(/[^a-z0-9]/gi, "")     // Chỉ giữ lại chữ cái và số
+        .trim();
+}
+
 // Cập nhật lại hàm openClassByName để hỗ trợ tìm kiếm linh hoạt (khớp một phần từ khóa)
 function openClassByName(className) {
     if (!className) return;
 
-    const targetName = className
-        .replace(/[^a-z0-9]/gi, "")
-        .trim()
-        .toLowerCase();
-
+    const targetName = normalizeString(className);
     const headers = document.querySelectorAll(".class-accordion-header");
 
     for (const header of headers) {
         const title = header.querySelector(".class-main-title");
         if (!title) continue;
 
-        const currentName = title.textContent
-            .replace(/[^a-z0-9]/gi, "")
-            .trim()
-            .toLowerCase();
+        const currentName = normalizeString(title.textContent);
 
-        // Kiểm tra nếu tên lớp trên điểm danh có chứa từ khóa từ lịch chuyển sang (hoặc ngược lại)
+        // Kiểm tra nếu tên lớp trên điểm danh chứa từ khóa từ URL hoặc ngược lại
         if (currentName.includes(targetName) || targetName.includes(currentName)) {
             const wrapper = header.closest(".class-block-wrapper");
             if (!wrapper) continue;
@@ -1526,6 +1531,10 @@ function openClassByName(className) {
 
     console.warn("Không tìm thấy lớp:", className);
 }
+
+
+window.openClassByName = openClassByName;
+
 
 
 
