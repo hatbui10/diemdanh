@@ -1383,6 +1383,42 @@ function toggleClassFullBlink(buttonElement, classKey) {
 }
 
 
+	window.addEventListener('DOMContentLoaded', (event) => {
+    // 1. Đọc tham số từ URL (ví dụ: ?class=Cloudkid)
+    const urlParams = new URLSearchParams(window.location.search);
+    const targetClass = urlParams.get('class');
+
+    if (targetClass) {
+        // Giải mã tên lớp phòng khi có ký tự đặc biệt như khoảng trắng (%20), dấu cộng (%2B)
+        const decodedClass = decodeURIComponent(targetClass);
+
+        // 2. Tìm tất cả các thẻ select trên trang để quét tìm ô chọn lớp
+        const allSelects = document.querySelectorAll('select');
+        let foundDropdown = null;
+
+        for (let select of allSelects) {
+            // Kiểm tra xem trong các option của select này có chứa tên lớp cần tìm hay không
+            let hasOption = Array.from(select.options).some(option => option.value === decodedClass || option.text.trim() === decodedClass);
+            if (hasOption) {
+                foundDropdown = select;
+                break;
+            }
+        }
+
+        // Nếu tìm thấy ô chọn lớp phù hợp
+        if (foundDropdown) {
+            foundDropdown.value = decodedClass;
+            
+            // 3. Kích hoạt sự kiện change để trang tự load dữ liệu điểm danh của lớp đó lên
+            const changeEvent = new Event('change', { bubbles: true });
+            foundDropdown.dispatchEvent(changeEvent);
+            console.log("Đã tự động chọn lớp:", decodedClass);
+        } else {
+            console.warn("Không tìm thấy ô chọn lớp phù hợp cho:", decodedClass);
+        }
+    }
+});
+
 </script>
 
 <script type="module">
