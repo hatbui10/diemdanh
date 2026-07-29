@@ -1398,13 +1398,13 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebas
 import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCsMmRQ7qPD8Vh2GF10RtOxBSCJeu1XB3g",
-  authDomain: "diemdanh-test.firebaseapp.com",
-  projectId: "diemdanh-test",
-  storageBucket: "diemdanh-test.firebasestorage.app",
-  messagingSenderId: "597983373263",
-  appId: "1:597983373263:web:2a353cad3878390b5594ba",
-  measurementId: "G-J7SVE1EYPZ"
+  apiKey: "AIzaSyCwihbLJUIPmEpzbNgKxYCUs1AcX4SG42w",
+  authDomain: "diemdanhgv-d6a9b.firebaseapp.com",
+  projectId: "diemdanhgv-d6a9b",
+  storageBucket: "diemdanhgv-d6a9b.firebasestorage.app",
+  messagingSenderId: "530760774311",
+  appId: "1:530760774311:web:99a4273d0a1defd67f2182",
+  measurementId: "G-16C79QHVQJ"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -1465,50 +1465,59 @@ console.log("Đã kết nối Firebase");
 
 
 
+window.addEventListener('DOMContentLoaded', (event) => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const targetLop = urlParams.get('class');
+
+    if (targetLop) {
+        // Đợi một nhịp để hệ thống vẽ xong giao diện (hoặc tải xong từ Firebase/LocalStorage)
+        setTimeout(() => {
+            openClassByName(targetLop);
+        }, 500);
+    }
+});
+
+// Cập nhật lại hàm openClassByName để hỗ trợ tìm kiếm linh hoạt (khớp một phần từ khóa)
 function openClassByName(className) {
     if (!className) return;
 
     const targetName = className
-        .replace(/\s+/g, " ")
+        .replace(/[^a-z0-9]/gi, "")
         .trim()
         .toLowerCase();
 
     const headers = document.querySelectorAll(".class-accordion-header");
 
     for (const header of headers) {
-
         const title = header.querySelector(".class-main-title");
         if (!title) continue;
 
         const currentName = title.textContent
-            .replace(/\s+/g, " ")
+            .replace(/[^a-z0-9]/gi, "")
             .trim()
             .toLowerCase();
 
-        if (currentName === targetName) {
-
+        // Kiểm tra nếu tên lớp trên điểm danh có chứa từ khóa từ lịch chuyển sang (hoặc ngược lại)
+        if (currentName.includes(targetName) || targetName.includes(currentName)) {
             const wrapper = header.closest(".class-block-wrapper");
-            if (!wrapper) return;
+            if (!wrapper) continue;
 
             // Mở accordion nếu đang đóng
             if (!wrapper.classList.contains("active")) {
                 header.click();
             }
 
-            // Cuộn tới lớp
+            // Cuộn tới lớp và làm nổi bật
             setTimeout(() => {
                 wrapper.scrollIntoView({
                     behavior: "smooth",
                     block: "start"
                 });
 
-                // Highlight
                 wrapper.classList.add("highlight-class");
-
                 setTimeout(() => {
                     wrapper.classList.remove("highlight-class");
-                }, 2000);
-
+                }, 2500);
             }, 100);
 
             return;
@@ -1517,46 +1526,6 @@ function openClassByName(className) {
 
     console.warn("Không tìm thấy lớp:", className);
 }
-
-
-
-window.addEventListener('DOMContentLoaded', (event) => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const className = urlParams.get('class'); // Ví dụ nhận được: "Skykid"
-
-    if (className) {
-        // Lọc lấy từ khóa chính của lớp, chuyển về chữ thường và bỏ khoảng trắng thừa
-        const mainKeyword = className.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
-
-        // Lấy tất cả các khối hiển thị lớp học trên trang điểm danh
-        // (Hãy thay '.class-card' hoặc thẻ chứa tên lớp bằng class thực tế của trang điểm danh)
-        const classCards = document.querySelectorAll('.class-card, .accordion-item, .box-lop'); 
-
-        classCards.forEach(card => {
-            const cardText = card.textContent.trim().toLowerCase();
-            const cardKeyword = cardText.replace(/[^a-z0-9]/g, '');
-
-            // Nếu phần chữ chính của tên lớp xuất hiện trong tiêu đề card điểm danh
-            if (cardKeyword.includes(mainKeyword)) {
-                // Cuộn màn hình đến lớp đó
-                card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                
-                // Thêm hiệu ứng nhấp nháy hoặc màu viền nổi bật để dễ nhận diện
-                card.style.border = "2px solid #00f2fe";
-                card.style.boxShadow = "0 0 15px rgba(0, 242, 254, 0.6)";
-
-                // Tự động mở rộng nội dung nếu card đang bị thu gọn
-                const toggleBtn = card.querySelector('.dropdown-toggle, .btn-toggle, button');
-                if (toggleBtn) {
-                    toggleBtn.click();
-                }
-            }
-        });
-    }
-});
-
-
-
 
 
 
