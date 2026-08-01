@@ -78,7 +78,7 @@ body.role-teacher .add-student-box {
         .custom-upload-btn { 
             display: inline-block; width: 48%; background: transparent; border: 1px solid #00f0ff; color: #00f0ff; 
             padding: 12px 5px; font-weight: bold; font-size: 0.85rem; border-radius: 25px; cursor: pointer; 
-            text-transform: uppercase; text-align: center; margin-right: 2%; box-shadow: 0 0 8px rgba(0, 240, 255, 0.2);
+            text-transform: uppercase; text-align: center; margin-right: 2%; margin-top: 3%; box-shadow: 0 0 8px rgba(0, 240, 255, 0.2);
         }
         .custom-upload-btn:active { background: #00f0ff; color: #000; }
         
@@ -385,15 +385,21 @@ margin-right: 20px; /* Thêm dòng này để cách mép phải 20px */
     <div class="btn-group-top">
         <!-- Ô nhập mật khẩu -->
         <input type="password" id="uploadPasswordInput" placeholder="Nhập mật khẩu để mở khóa..." oninput="verifyUploadPassword(this)" style="width: 100%; background: #050508; border: 1px solid #ffd700; color: #fff; padding: 10px; font-size: 0.85rem; border-radius: 4px; outline: none; margin-bottom: 10px; text-align: center;">
-        
+        <button class="custom-upload-btn" onclick="backupAttendanceData()">
+💾 Sao lưu điểm danh
+</button>
         <!-- Nhóm nút tải file và xóa dữ liệu (Ban đầu ẩn đi) -->
-        <div id="protectedUploadActions" style="display: none;">
-            <label for="excelFileInput" class="custom-upload-btn">📂 Tải lên File Excel</label>
-            <input type="file" id="excelFileInput" accept=".xlsx, .xls" style="display: none;" onchange="startProcessingExcel(this)">
-            <button class="btn-danger-top" onclick="clearSystemCache()">XÓA dữ liệu CŨ</button>
-       <!-- ➕ NÚT RESET Ô ĐIỂM DANH MỚI -->
-            <button class="btn-danger-top" style="width: 100%; margin-top: 8px; border-color: #ffd700; color: #ffd700;" onclick="confirmResetTimeSlots()">🔄 RESET TẤT CẢ Ô ĐIỂM DANH</button>
-        </div>
+<div id="protectedUploadActions" style="display: none; align-items: center; gap: 10px;">
+    <!-- Nút tải lên File Excel (Biến thẻ label thành dạng nút bấm ngang) -->
+    <label for="excelFileInput" class="custom-upload-btn" style="margin: 0;margin-top: 3%; cursor: pointer; text-align: center;">📂 Tải lên File Excel</label>
+    
+    <!-- ➕ NÚT RESET Ô ĐIỂM DANH MỚI -->
+    <button class="custom-upload-btn" style="margin: 0;margin-top: 3%; border-color: #ffd700; color: #ffd700; white-space: nowrap;" onclick="confirmResetTimeSlots()">🔄 RESET Ô ĐIỂM DANH</button>
+    
+    <input type="file" id="excelFileInput" accept=".xlsx, .xls" style="display: none;" onchange="startProcessingExcel(this)">
+    
+    <button class="btn-danger-top" onclick="clearSystemCache()" style="display: none;">XÓA dữ liệu CŨ</button>
+</div>
 
     </div>
     <div id="fileStatusMessage" class="file-status">Vui lòng nhập mật khẩu để hiển thị chức năng tải file.</div>
@@ -488,6 +494,24 @@ window.onload = async function () {
 
 
 
+// Hàm tìm kiếm học sinh cũ dựa vào SĐT hoặc Tên (đã chuẩn hóa)
+function findOldStudent(name, phone, oldDatabase) {
+    const normalize = str =>
+        (str || "").toLowerCase().trim().replace(/\s+/g, " ");
+
+    for (const classKey in oldDatabase) {
+        if (!oldDatabase[classKey] || !oldDatabase[classKey].students) continue;
+
+        const student = oldDatabase[classKey].students.find(s => {
+            if (phone && s.phone === phone) return true;
+            return normalize(s.name) === normalize(name);
+        });
+
+        if (student) return student;
+    }
+    return null;
+}
+
 function startProcessingExcel(input) {
     const file = input.files[0];
     if (!file) return;
@@ -495,13 +519,13 @@ function startProcessingExcel(input) {
     document.getElementById('fileStatusMessage').style.color = "#ffd700";
     document.getElementById('fileStatusMessage').innerText = `Đang xử lý phân tách lớp từ tệp: ${file.name}...`;
     document.getElementById('searchResultBox').style.display = 'none';
+    
     const progressContainer = document.getElementById('progressContainer');
     const progressBar = document.getElementById('progressBar');
     progressContainer.style.display = 'block';
     progressBar.style.width = '0%';
     progressBar.innerText = '0%';
 
-    bigClassesDatabase = {};
     const reader = new FileReader();
     reader.onload = function(e) {
         try {
@@ -515,6 +539,24 @@ function startProcessingExcel(input) {
                 return;
             }
 
+            // 🟢 SAO LƯU DỮ LIỆU CŨ AN TOÀN TRƯỚC KHI KHỞI TẠO MỚI DATABASE
+            const oldDatabase = JSON.parse(JSON.stringify(bigClassesDatabase));
+            
+            // Nếu bigClassesDatabase trong RAM đang trống, thử khôi phục từ localStorage để đảm bảo không mất dữ liệu điểm danh cũ
+            if (Object.keys(oldDatabase).length === 0) {
+                const localCache = localStorage.getItem("big_classes_database");
+                if (localCache) {
+                    try {
+                        Object.assign(oldDatabase, JSON.parse(localCache));
+                    } catch (err) {
+                        console.error("Lỗi đọc cache cũ:", err);
+                    }
+                }
+            }
+
+            // Tiến hành làm mới database để nạp dữ liệu từ file Excel mới
+            bigClassesDatabase = {};
+
             let totalSheets = sheetsToProcess.length;
             let currentSheetIdx = 0;
 
@@ -527,13 +569,14 @@ function startProcessingExcel(input) {
                     Object.keys(bigClassesDatabase).forEach(classKey => {
                         totalStudentsCount += bigClassesDatabase[classKey].students.length;
                     });
+                    
                     document.getElementById('fileStatusMessage').style.color = "#00ff66";
                     document.getElementById('fileStatusMessage').innerText = `✅ Nạp thành công! Tìm thấy tổng cộng ${totalStudentsCount} học viên.\nĐã vẽ xong Form Quản Lý cho tất cả các lớp.`;
                     
                     localStorage.setItem('big_classes_database', JSON.stringify(bigClassesDatabase));
                     localStorage.setItem('big_classes_filename', file.name);
                     
-					await saveDatabaseState();
+                    await saveDatabaseState();
                     renderFullSystemUI();
                     return;
                 }
@@ -587,7 +630,7 @@ function startProcessingExcel(input) {
 
                         if (readingStudents) {
                             if (cellB && !/^\d+$/.test(cellB) && cleanPhone.length >= 9 && cleanPhone.length <= 11) {
-                                let currentClassKey = detectedClassName ;
+                                let currentClassKey = detectedClassName;
                                 if (!bigClassesDatabase[currentClassKey]) {
                                     bigClassesDatabase[currentClassKey] = {
                                         sheet: sheetName,
@@ -596,13 +639,21 @@ function startProcessingExcel(input) {
                                     };
                                 }
 
+                                // 🟢 Tìm dữ liệu điểm danh cũ từ bản sao an toàn (oldDatabase)
+                                const oldStudent = findOldStudent(cellB, cleanPhone, oldDatabase);
+
                                 bigClassesDatabase[currentClassKey].students.push({
-                                    id: bigClassesDatabase[currentClassKey].students.length + 1,
+                                    id: oldStudent?.id || (bigClassesDatabase[currentClassKey].students.length + 1),
                                     name: cellB,
                                     phone: cleanPhone,
-                                    status: "present",
-                                    note: "",
-                                   absentTime: "" // Thêm trường lưu thời gian vắng
+                                    status: oldStudent?.status || "present",
+                                    note: oldStudent?.note || "",
+                                    absentTime: oldStudent?.absentTime || "",
+                                    timeSlots: oldStudent?.timeSlots || Array(8).fill({ state: 'normal', timestamp: null }),
+                                    history: oldStudent?.history || [],
+                                    evaluations: oldStudent?.evaluations || {},
+                                    lastEditor: oldStudent?.lastEditor || "",
+                                    lastEditTime: oldStudent?.lastEditTime || ""
                                 });
                                 return;
                             }
@@ -612,14 +663,14 @@ function startProcessingExcel(input) {
                                 previousText = cellB;
                                 return;
                             }
-                            return;
-                        }
-
-                        if (cellB && cleanPhone.length < 9) {
-                            previousText = cellB;
+                        } else {
+                            if (cellB && cleanPhone.length < 9) {
+                                previousText = cellB;
+                            }
                         }
                     });
                 }
+                
                 currentSheetIdx++;
                 setTimeout(parseSheetStep, 10);
             }
@@ -632,6 +683,9 @@ function startProcessingExcel(input) {
     };
     reader.readAsArrayBuffer(file);
 }
+
+
+
 
 function toggleClassAccordion(headerElement) {
     const wrapper = headerElement.parentElement;
@@ -867,7 +921,7 @@ function renderStudentCardsHtml(classKey, students) {
                         <option value="Không nghe máy" ${student.note==='Không nghe máy'?'selected':''}>Không nghe máy</option>
                         <option value="Nghỉ hôm nay" ${student.note==='Nghỉ hôm nay'?'selected':''}>Nghỉ hôm nay</option>
                         <option value="Nghỉ tuần này" ${student.note==='Nghỉ tuần này'?'selected':''}>Nghỉ tuần này</option>
-                        <option value=" Phụ huynh đang gọi học sinh" ${student.note===' Phụ huynh đang gọi học sinh'?'selected':''}>Phụ huynh đang gọi cho học sinh</option>
+                     
                         <option value="Phản ánh chất lượng" ${student.note==='Phản ánh chất lượng'?'selected':''}>Phản ánh chất lượng</option>
                         <option value="Xin nghỉ hẳn" ${student.note==='Xin nghỉ hẳn'?'selected':''}>Xin nghỉ hẳn</option>
                         <option value="Ốm đau" ${student.note==='Ốm đau'?'selected':''}>Ốm đau</option>
@@ -1390,74 +1444,6 @@ function toggleClassFullBlink(buttonElement, classKey) {
     }
 });
 
-window.addEventListener('DOMContentLoaded', (event) => {
-    // Hỗ trợ cả hai tên biến trên URL: ?class=... hoặc ?lop=...
-    const urlParams = new URLSearchParams(window.location.search);
-    const targetLop = urlParams.get('class') || urlParams.get('lop');
-
-    if (targetLop) {
-        // Đợi một nhịp để hệ thống vẽ xong giao diện (hoặc tải xong từ Firebase/LocalStorage)
-        setTimeout(() => {
-            openClassByName(targetLop);
-        }, 500);
-    }
-});
-
-// Hàm chuẩn hóa chuỗi tiếng Việt: chuyển về chữ thường, bỏ dấu và loại bỏ ký tự đặc biệt
-function normalizeString(str) {
-    if (!str) return "";
-    return str
-        .toLowerCase()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "") // Xóa dấu tiếng Việt
-        .replace(/[^a-z0-9]/gi, "")     // Chỉ giữ lại chữ cái và số
-        .trim();
-}
-
-// Cập nhật lại hàm openClassByName để hỗ trợ tìm kiếm linh hoạt (khớp một phần từ khóa)
-function openClassByName(className) {
-    if (!className) return;
-
-    const targetName = normalizeString(className);
-    const headers = document.querySelectorAll(".class-accordion-header");
-
-    for (const header of headers) {
-        const title = header.querySelector(".class-main-title");
-        if (!title) continue;
-
-        const currentName = normalizeString(title.textContent);
-
-        // Kiểm tra nếu tên lớp trên điểm danh chứa từ khóa từ URL hoặc ngược lại
-        if (currentName.includes(targetName) || targetName.includes(currentName)) {
-            const wrapper = header.closest(".class-block-wrapper");
-            if (!wrapper) continue;
-
-            // Mở accordion nếu đang đóng
-            if (!wrapper.classList.contains("active")) {
-                header.click();
-            }
-
-            // Cuộn tới lớp và làm nổi bật
-            setTimeout(() => {
-                wrapper.scrollIntoView({
-                    behavior: "smooth",
-                    block: "start"
-                });
-
-                wrapper.classList.add("highlight-class");
-                setTimeout(() => {
-                    wrapper.classList.remove("highlight-class");
-                }, 2500);
-            }, 100);
-
-            return;
-        }
-    }
-
-    console.warn("Không tìm thấy lớp:", className);
-}
-
-
 
 </script>
 
@@ -1466,13 +1452,13 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebas
 import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCwihbLJUIPmEpzbNgKxYCUs1AcX4SG42w",
-  authDomain: "diemdanhgv-d6a9b.firebaseapp.com",
-  projectId: "diemdanhgv-d6a9b",
-  storageBucket: "diemdanhgv-d6a9b.firebasestorage.app",
-  messagingSenderId: "530760774311",
-  appId: "1:530760774311:web:99a4273d0a1defd67f2182",
-  measurementId: "G-16C79QHVQJ"
+  apiKey: "AIzaSyCsMmRQ7qPD8Vh2GF10RtOxBSCJeu1XB3g",
+  authDomain: "diemdanh-test.firebaseapp.com",
+  projectId: "diemdanh-test",
+  storageBucket: "diemdanh-test.firebasestorage.app",
+  messagingSenderId: "597983373263",
+  appId: "1:597983373263:web:2a353cad3878390b5594ba",
+  measurementId: "G-J7SVE1EYPZ"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -1502,19 +1488,20 @@ window.loadFromFirebase = async function () {
         if (docSnap.exists()) {
             const data = docSnap.data();
             bigClassesDatabase = data.database || {};
-            localStorage.setItem("big_classes_database", JSON.stringify(bigClassesDatabase));
+			localStorage.setItem("big_classes_database", JSON.stringify(bigClassesDatabase));
             if (data.filename) {
-                localStorage.setItem("big_classes_filename", data.filename); // Đã xóa chữ 'api' thừa ở đây
+                localStorage.setItem("big_classes_filename", data.filename);
             }
             renderFullSystemUI();
  
-            const targetLop = new URLSearchParams(window.location.search).get("class");
 
-            if (targetLop) {
-                setTimeout(() => {
-                    openClassByName(targetLop);
-                }, 300);
-            }
+const targetLop = new URLSearchParams(window.location.search).get("class");
+
+if (targetLop) {
+    setTimeout(() => {
+        openClassByName(targetLop);
+    }, 300);
+}
 
             console.log("Đã tải dữ liệu từ Firebase");
         } else {
@@ -1525,16 +1512,102 @@ window.loadFromFirebase = async function () {
     }
 }
 
-
-
 window.testFirebase = async function () { await window.saveToFirebase(); }
 window.db = db;
 console.log("Đã kết nối Firebase");
 
 
 
+function openClassByName(className) {
+    if (!className) return;
+
+    const targetName = className
+        .replace(/\s+/g, " ")
+        .trim()
+        .toLowerCase();
+
+    const headers = document.querySelectorAll(".class-accordion-header");
+
+    for (const header of headers) {
+
+        const title = header.querySelector(".class-main-title");
+        if (!title) continue;
+
+        const currentName = title.textContent
+            .replace(/\s+/g, " ")
+            .trim()
+            .toLowerCase();
+
+        if (currentName === targetName) {
+
+            const wrapper = header.closest(".class-block-wrapper");
+            if (!wrapper) return;
+
+            // Mở accordion nếu đang đóng
+            if (!wrapper.classList.contains("active")) {
+                header.click();
+            }
+
+            // Cuộn tới lớp
+            setTimeout(() => {
+                wrapper.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start"
+                });
+
+                // Highlight
+                wrapper.classList.add("highlight-class");
+
+                setTimeout(() => {
+                    wrapper.classList.remove("highlight-class");
+                }, 2000);
+
+            }, 100);
+
+            return;
+        }
+    }
+
+    console.warn("Không tìm thấy lớp:", className);
+}
 
 
+
+function backupAttendanceData(){
+
+    const backup = {};
+
+    Object.keys(bigClassesDatabase).forEach(classKey=>{
+
+        backup[classKey]=bigClassesDatabase[classKey].students.map(s=>({
+
+            name:s.name,
+
+            phone:s.phone,
+
+            status:s.status,
+
+            note:s.note,
+
+            timeSlots:s.timeSlots||[],
+
+            absentTime:s.absentTime||""
+
+        }));
+
+    });
+
+    const blob=new Blob(
+        [JSON.stringify(backup,null,2)],
+        {type:"application/json"}
+    );
+
+    const a=document.createElement("a");
+    a.href=URL.createObjectURL(blob);
+    a.download="AttendanceBackup.json";
+    a.click();
+
+}
 
 
 
