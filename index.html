@@ -385,7 +385,7 @@ margin-right: 20px; /* Thêm dòng này để cách mép phải 20px */
     <div class="btn-group-top">
         <!-- Ô nhập mật khẩu -->
         <input type="password" id="uploadPasswordInput" placeholder="Nhập mật khẩu để mở khóa..." oninput="verifyUploadPassword(this)" style="width: 100%; background: #050508; border: 1px solid #ffd700; color: #fff; padding: 10px; font-size: 0.85rem; border-radius: 4px; outline: none; margin-bottom: 10px; text-align: center;">
-        <button class="custom-upload-btn" onclick="backupAttendanceData()">
+        <button class="custom-upload-btn" onclick="backupAttendanceData()" style ="display:none">
 💾 Sao lưu điểm danh
 </button>
         <!-- Nhóm nút tải file và xóa dữ liệu (Ban đầu ẩn đi) -->
@@ -949,7 +949,7 @@ function renderStudentCardsHtml(classKey, students) {
                         <option value="Không nghe máy" ${student.note==='Không nghe máy'?'selected':''}>Không nghe máy</option>
                         <option value="Nghỉ hôm nay" ${student.note==='Nghỉ hôm nay'?'selected':''}>Nghỉ hôm nay</option>
                         <option value="Nghỉ tuần này" ${student.note==='Nghỉ tuần này'?'selected':''}>Nghỉ tuần này</option>
-                     
+                     <option value="Đợi phụ huynh gọi lại" ${student.note==='Đợi phụ huynh gọi lại'?'selected':''}>Đợi phụ huynh gọi lại</option>
                         <option value="Phản ánh chất lượng" ${student.note==='Phản ánh chất lượng'?'selected':''}>Phản ánh chất lượng</option>
                         <option value="Xin nghỉ hẳn" ${student.note==='Xin nghỉ hẳn'?'selected':''}>Xin nghỉ hẳn</option>
                         <option value="Ốm đau" ${student.note==='Ốm đau'?'selected':''}>Ốm đau</option>
