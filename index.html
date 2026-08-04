@@ -9,7 +9,7 @@
 
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background-color: #266210; color: #e0e0e6; padding: 20px 8px; max-width: 600px; margin: 0 auto; }
+        body { background-color: #4E1F6E; color: #e0e0e6; padding: 20px 8px; max-width: 600px; margin: 0 auto; }
         
         h2 { text-align: center; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 15px; color: #00f0ff; text-shadow: 0 0 10px rgba(0, 240, 255, 0.5); font-size: 1.4rem; }
         h3 { color: #ff007f; text-shadow: 0 0 10px rgba(255, 0, 127, 0.5); font-size: 1.1rem; text-align: center; text-transform: uppercase; letter-spacing: 1px; }
@@ -450,6 +450,46 @@ margin-right: 20px; /* Thêm dòng này để cách mép phải 20px */
   padding: 8px 16px;
   font-size: 14px;
 }
+
+
+/* Màu nền và viền cho thẻ học sinh mới */
+.student-card.status-new-student { 
+    border-left-color: #ffd700 !important; 
+    background: #2a2500 !important; 
+}
+
+
+/* Khung lớp học đổi màu khi có học sinh mới */
+.class-block-wrapper.has-new-student-class {
+    border: 2px solid #ffd700 !important;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+}
+
+/* 1. Đổi MÀU NỀN và viền của Thẻ Học Sinh Mới */
+.student-card.status-new-student { 
+    background: #3d3300 !important; /* Màu nền vàng sậm nổi bật */
+    border: 1px solid #ffd700 !important;
+    border-left: 5px solid #ffd700 !important;
+}
+
+/* 2. Đổi MÀU NỀN toàn bộ Thẻ Lớp khi có học sinh mới */
+.class-block-wrapper.has-new-student-class {
+    background: #262000 !important; /* Nền của khung lớp */
+    border: 2px solid #ffd700 !important;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+}
+
+/* Đổi màu nền thanh tiêu đề lớp */
+.class-block-wrapper.has-new-student-class .class-accordion-header {
+    background: #3b3100 !important; 
+}
+
+/* Đổi màu nền bảng chi tiết bên trong lớp */
+.class-block-wrapper.has-new-student-class .class-panel {
+    background: #262000 !important; 
+}
+
+
 
 </style>
 </head>
@@ -924,8 +964,9 @@ const htmlCheckbox = `
             const present = total - absent;
 
             const classSection = document.createElement("div");
-            classSection.className = "class-block-wrapper";
-            classSection.setAttribute("data-classname-box", classKey);
+// Gắn class đổi màu nền nếu lớp có học sinh mới
+classSection.className = `class-block-wrapper ${classObj.hasNewStudent ? 'has-new-student-class' : ''}`;
+classSection.setAttribute("data-classname-box", classKey);
 
             classSection.innerHTML = `
                 <div class="class-accordion-header" onclick="toggleClassAccordion(this)">
@@ -1285,6 +1326,17 @@ function refreshClassUI(classKey) {
         labelNewStudentEl.style.display = bigClassesDatabase[classKey].hasNewStudent ? 'inline' : 'none';
     }
     
+
+
+// Cập nhật đổi màu nền toàn bộ thẻ lớp ngay lập tức
+    const classBoxEl = document.querySelector(`[data-classname-box="${classKey}"]`);
+    if (classBoxEl) {
+        if (bigClassesDatabase[classKey].hasNewStudent) {
+            classBoxEl.classList.add('has-new-student-class');
+        } else {
+            classBoxEl.classList.remove('has-new-student-class');
+        }
+    }
     // Lưu lại trạng thái cập nhật mới
     saveDatabaseState();
 }
@@ -1337,13 +1389,14 @@ function addNewStudentToClass(classKey) {
     const studentsList = bigClassesDatabase[classKey].students;
     const nextId = studentsList.length > 0 ? Math.max(...studentsList.map(s => s.id)) + 1 : 1;
     
-    // Thêm học sinh mới vào mảng dữ liệu
+    // Thêm học sinh mới vào mảng dữ liệu với trạng thái hiển thị riêng (status-new-student)
     studentsList.push({ 
         id: nextId, 
         name: name, 
         phone: phone, 
-       status: 'absent', // <--- Đổi thành 'absent' để nằm trong danh sách vắng
-        note: 'học sinh mới ',
+        uniqueKey: `${name.trim().toLowerCase()}_${phone}`,
+        status: 'new-student', // Trạng thái giúp đổi màu nền thẻ học sinh
+        note: 'Học sinh mới',
         timeSlots: Array(8).fill({ state: 'normal', timestamp: null })
     });
 
@@ -1357,8 +1410,6 @@ function addNewStudentToClass(classKey) {
     refreshClassUI(classKey);
     updateGroupStatsText(bigClassesDatabase[classKey].sheet);
 }
-
-
 
 
 
