@@ -935,7 +935,7 @@ const htmlCheckbox = `
             <span id="label-full-text-${classKey.replace(/\s+/g, '-')}" style="margin-left: 10px; color: #bfff00; font-weight: bold; font-size: 0.9rem; text-transform: uppercase; ${classObj.isFull ? 'display: inline;' : 'display: none;'}"> [--Lớp đi học ĐỦ--]</span>
             
             <!-- 🟢 THÊM THẺ NÀY: Hiển thị thông báo có học sinh mới -->
-            <span id="label-new-student-${classKey.replace(/\s+/g, '-')}" style="margin-left: 80px; color: #ffd700; font-weight: bold; font-size: 0.9rem; text-transform: uppercase; ${classObj.hasNewStudent ? 'display: inline;' : 'display: none;'}"> [--Có học sinh mới--]</span>
+          <span id="label-new-student-${classKey.replace(/\s+/g, '-')}" style="display: ${classObj.hasNewStudent ? 'block' : 'none'}; margin-top: 5px; color: #ffd700; font-weight: bold; font-size: 0.9rem; text-transform: uppercase;"> [--Có học sinh mới--]</span>
         </div>
 
 
@@ -1751,6 +1751,7 @@ const firebaseConfig = {
   appId: "1:530760774311:web:99a4273d0a1defd67f2182",
   measurementId: "G-16C79QHVQJ"
 };
+
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
