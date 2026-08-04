@@ -414,6 +414,8 @@ margin-right: 20px; /* Thêm dòng này để cách mép phải 20px */
 </div>
 
 <button onclick="resetWebsiteData()">🗑 load lại trang</button>
+
+
 	
 <div class="search-box">
     <input type="text" id="globalSearchInput" class="search-input" placeholder="Nhập tên hoặc số điện thoại để tìm nhanh..." onkeypress="handleSearchKeyPress(event)">
@@ -1600,6 +1602,14 @@ function toggleExcusedStatus(classKey, uniqueKey, isChecked) {
     }
 }
 
+
+	function resetWebsiteData() {
+    localStorage.clear();
+    sessionStorage.clear();
+    location.reload();
+	}
+
+	
 </script>
 
 <script type="module">
