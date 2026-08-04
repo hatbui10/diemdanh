@@ -44,7 +44,7 @@
 body.role-teacher .upload-card,
 body.role-teacher .btn-call,
 body.role-teacher .btn-delete,
-body.role-teacher .copy-btn,
+
 body.role-teacher .student-controls-row .btn-present,
 /* Ẩn các ô điểm danh thời gian thực (time-slots-row) đối với tài khoản Giáo Viên */
 body.role-teacher .time-slots-row {
@@ -1212,7 +1212,7 @@ function addNewStudentToClass(classKey) {
         id: nextId, 
         name: name, 
         phone: phone, 
-       status: 'new', 
+       status: 'absent', // <--- Đổi thành 'absent' để nằm trong danh sách vắng
         note: 'học sinh mới ',
         timeSlots: Array(8).fill({ state: 'normal', timestamp: null })
     });
