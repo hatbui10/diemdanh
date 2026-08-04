@@ -732,14 +732,15 @@ function startProcessingExcel(input) {
                                 let currentClassKey = detectedClassName;
 
 
-                               if (!bigClassesDatabase[currentClassKey]) {
-                                 bigClassesDatabase[currentClassKey] = {
-                                     sheet: sheetName,
-                                     schedule: detectedSchedule,
-                                     isFull: false, // <--- Thêm dòng này để lưu trạng thái checkbox
-                                     students: []
-                                 };
-                             }
+                            if (!bigClassesDatabase[currentClassKey]) {
+        bigClassesDatabase[currentClassKey] = {
+            sheet: sheetName,
+            schedule: detectedSchedule,
+            isFull: false, // Trạng thái checkbox ĐỦ
+            lastTime: "",  // Thêm dòng này để lưu thời gian thao tác cuối của lớp
+            students: []
+        };
+    }
 
                                 // 🟢 Tìm dữ liệu điểm danh cũ từ bản sao an toàn (oldDatabase)
                                 const oldStudent = findOldStudent(cellB, cleanPhone, oldDatabase);
@@ -939,7 +940,14 @@ const htmlCheckbox = `
 
 
                     <div class="class-schedule">${classObj.schedule || ""}</div>
-                    <div class="class-stats" id="stats-${classKey.replace(/\s+/g, '-')}">Có mặt: ${present}&nbsp;&nbsp;&nbsp;&nbsp;-----&nbsp;&nbsp;&nbsp;&nbsp;Vắng: ${absent}&nbsp;&nbsp;&nbsp;&nbsp;-----&nbsp;&nbsp;&nbsp;&nbsp;🕒 Cuối: ${cls.lastTime || 'Chưa có'}</div>
+                    <!-- 🕒 Hiển thị thống kê có mặt, vắng và thời gian cập nhật cuối cùng -->
+    <div class="class-stats" id="stats-${classKey.replace(/\s+/g, '-')}">
+        Có mặt: ${students.length - students.filter(s => s.status === 'absent').length} 
+        ----- 
+        Vắng: ${students.filter(s => s.status === 'absent').length} 
+        ----- 
+        🕒 Cập nhật lần cuối :   ${bigClassesDatabase[classKey].lastUpdateTime || 'Chưa cập nhật'}
+    </div>
                 </div>
                 
                 <div class="class-panel">
@@ -961,14 +969,7 @@ const htmlCheckbox = `
 </div>
 
                     <div class="absent-section">
-    <!-- 🕒 Hiển thị thống kê có mặt, vắng và thời gian cập nhật cuối cùng -->
-    <div class="class-stats" id="stats-${classKey.replace(/\s+/g, '-')}">
-        Có mặt: ${students.length - students.filter(s => s.status === 'absent').length} 
-        ----- 
-        Vắng: ${students.filter(s => s.status === 'absent').length} 
-        ----- 
-        🕒 Cuối: ${bigClassesDatabase[classKey].lastUpdateTime || 'Chưa cập nhật'}
-    </div>
+    
 
     <div class="absent-header">
         <span class="absent-title">DANH SÁCH VẮNG HÔM NAY</span>
@@ -1239,7 +1240,7 @@ function refreshClassUI(classKey) {
     const now = new Date();
     const timeString = now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
     const dateString = now.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
-    const fullDateTime = `${timeString} ${dateString}`;
+    const fullDateTime = `${timeString}     -     ${dateString}`;
     
     // Lưu lại thời gian vào database của lớp
     bigClassesDatabase[classKey].lastUpdateTime = fullDateTime;
