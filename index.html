@@ -452,7 +452,11 @@ margin-right: 20px; /* Thêm dòng này để cách mép phải 20px */
 }
 
 
-
+/* Màu nền và viền cho thẻ học sinh mới */
+.student-card.status-new-student { 
+    border-left-color: #ffd700 !important; 
+    background: #2a2500 !important; 
+}
 
 
 /* Khung lớp học đổi màu khi có học sinh mới */
@@ -461,7 +465,12 @@ margin-right: 20px; /* Thêm dòng này để cách mép phải 20px */
     box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
 }
 
-
+/* 1. Đổi MÀU NỀN và viền của Thẻ Học Sinh Mới */
+.student-card.status-new-student { 
+    background: #3d3300 !important; /* Màu nền vàng sậm nổi bật */
+    border: 1px solid #ffd700 !important;
+    border-left: 5px solid #ffd700 !important;
+}
 
 /* 2. Đổi MÀU NỀN toàn bộ Thẻ Lớp khi có học sinh mới */
 .class-block-wrapper.has-new-student-class {
@@ -1871,8 +1880,7 @@ function checkAndAutoResetAfter22h() {
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
-import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
-
+import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCwihbLJUIPmEpzbNgKxYCUs1AcX4SG42w",
@@ -1883,6 +1891,7 @@ const firebaseConfig = {
   appId: "1:530760774311:web:99a4273d0a1defd67f2182",
   measurementId: "G-16C79QHVQJ"
 };
+
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
@@ -1903,7 +1912,6 @@ window.saveToFirebase = async function () {
     }
 }
 
-// Giữ lại hàm loadFromFirebase theo ý bạn để không bị lỗi ở các chỗ khác
 window.loadFromFirebase = async function () {
     try {
         const docRef = doc(db, "system", "database");
@@ -1912,13 +1920,15 @@ window.loadFromFirebase = async function () {
         if (docSnap.exists()) {
             const data = docSnap.data();
             bigClassesDatabase = data.database || {};
-            localStorage.setItem("big_classes_database", JSON.stringify(bigClassesDatabase));
+			localStorage.setItem("big_classes_database", JSON.stringify(bigClassesDatabase));
             if (data.filename) {
                 localStorage.setItem("big_classes_filename", data.filename);
             }
-            if (typeof renderFullSystemUI === "function") {
-                renderFullSystemUI();
-            }
+            renderFullSystemUI();
+ 
+
+
+
             console.log("Đã tải dữ liệu từ Firebase");
         } else {
             console.log("Chưa có dữ liệu trên Firebase");
@@ -1928,45 +1938,36 @@ window.loadFromFirebase = async function () {
     }
 }
 
-// Tự động lắng nghe thời gian thực (real-time snapshot) cho 10 thiết bị
-function initRealtimeSync() {
-    const docRef = doc(db, "system", "database");
-    onSnapshot(docRef, (docSnap) => {
-        if (docSnap.exists()) {
-            const data = docSnap.data();
-            bigClassesDatabase = data.database || {};
-            localStorage.setItem("big_classes_database", JSON.stringify(bigClassesDatabase));
-            if (data.filename) {
-                localStorage.setItem("big_classes_filename", data.filename);
-            }
-            if (typeof renderFullSystemUI === "function") {
-                renderFullSystemUI();
-            }
-            console.log("Đã tự động đồng bộ dữ liệu thời gian thực từ máy khác");
-        }
-    }, (err) => {
-        console.error("Lỗi lắng nghe Firebase:", err);
-    });
-}
-
-// Kích hoạt lắng nghe ngầm ngay khi load trang
-initRealtimeSync();
-
 window.testFirebase = async function () { await window.saveToFirebase(); }
 window.db = db;
 console.log("Đã kết nối Firebase");
 
+
+
+
+
 function backupAttendanceData(){
+
     const backup = {};
+
     Object.keys(bigClassesDatabase).forEach(classKey=>{
+
         backup[classKey]=bigClassesDatabase[classKey].students.map(s=>({
+
             name:s.name,
+
             phone:s.phone,
+
             status:s.status,
+
             note:s.note,
+
             timeSlots:s.timeSlots||[],
+
             absentTime:s.absentTime||""
+
         }));
+
     });
 
     const blob=new Blob(
@@ -1978,10 +1979,16 @@ function backupAttendanceData(){
     a.href=URL.createObjectURL(blob);
     a.download="AttendanceBackup.json";
     a.click();
+
 }
+
+
+
+
+
+
+
+
 </script>
-
-
-
 </body>
 </html>
