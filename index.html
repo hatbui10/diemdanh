@@ -1403,7 +1403,9 @@ function copyAbsentReport(classKey) {
         text += '- Lớp đi học đủ.';
     } else {
         absentStudents.forEach((s, idx) => {
-            const note = s.note ? ' (' + s.note + ')' : '';
+            // Dùng hàm replace để lọc bỏ toàn bộ thẻ HTML (như <span style="...">) khỏi ghi chú
+            const cleanNote = s.note ? s.note.replace(/<[^>]*>/g, '') : '';
+            const note = cleanNote ? ' (' + cleanNote + ')' : '';
             text += (idx + 1) + '. ' + s.name + note + '\n';
         });
     }
@@ -1412,7 +1414,6 @@ function copyAbsentReport(classKey) {
         alert('Đã copy báo cáo lớp ' + classKey + '!');
     }).catch(() => alert('Lỗi không thể tự động copy.'));
 }
-
 
 
 
